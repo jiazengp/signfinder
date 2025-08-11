@@ -1,0 +1,78 @@
+name: Java CI with Gradle
+
+on:
+  push:
+    branches-ignore:
+      - "dependabot/**"
+    tags-ignore:
+      - "**"
+    paths:
+      - "**.java"
+      - "**.json"
+      - "**.yml"
+      - "gradle**"
+      - "*.gradle"
+      - "*.accesswidener"
+  pull_request:
+    paths:
+      - "**.java"
+      - "**.json"
+      - "**.yml"
+      - "gradle**"
+      - "*.gradle"
+      - "*.accesswidener"
+  workflow_dispatch:
+    inputs:
+      distinct_id:
+        description: "Automatically set by the return-dispatch action (leave blank if running manually)"
+        required: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      VIRUSTOTAL_API_KEY: ${{ secrets.VIRUSTOTAL_API_KEY }}
+      IMGUR_CLIENT_ID: ${{ secrets.IMGUR_CLIENT_ID }}
+    steps:
+
+    - name: Echo distinct ID ${{ github.event.inputs.distinct_id }}
+      run: echo ${{ github.event.inputs.distinct_id }}
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Java 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: "21"
+        distribution: "microsoft"
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+      with:
+        build-scan-publish: true
+        build-scan-terms-of-use-url: "https://gradle.com/help/legal-terms-of-use"
+        build-scan-terms-of-use-agree: "yes"
+        # Enable cache writing for NeoForge branches, since they don't benefit from the Fabric cache on master
+        cache-read-only: ${{ github.ref != 'refs/heads/master' && !contains(github.ref, 'neoforge') }}
+
+    - name: Compile Java code
+      run: ./gradlew remapJar --stacktrace --warning-mode=fail
+
+    - name: Validate JSON files
+      run: ./gradlew spotlessJsonCheck || (echo "::error::JSON validation failed! Run './gradlew spotlessApply' to fix style issues, or check the full error message for syntax errors." && exit 1)
+
+    - name: Validate Java code style
+      run: ./gradlew spotlessJavaCheck || (echo "::error::Java code style validation failed! To fix, run 'Clean Up' and then 'Format' in Eclipse, or './gradlew spotlessApply' in the terminal." && exit 1)
+
+    - name: Run unit tests
+      run: ./gradlew test --stacktrace --warning-mode=fail
+
+    - name: Validate access widener
+      run: ./gradlew validateAccessWidener --stacktrace --warning-mode=fail
+
+    - name: Build
+      run: ./gradlew build --stacktrace --warning-mode=fail

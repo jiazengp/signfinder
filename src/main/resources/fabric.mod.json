@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "signfinder",
+  "version": "${version}",
+  "name": "SignFinder",
+  "icon": "assets/signfinder/icon.png",
+  "description": "A Minecraft Fabric mod that finds and highlights signs based on content with search capabilities.",
+  "authors": [
+    "Hyouka233"
+  ],
+  "contact": {
+    "homepage": "https://modrinth.com/project/signfinder",
+    "sources": "https://github.com/jiazengp/signfinder",
+    "issues": "https://github.com/jiazengp/signfinder/issues"
+  },
+  "license": "GPL v3",
+  "environment": "client",
+  "entrypoints": {
+    "main": [
+      "net.signfinder.SignFinderModInitializer",
+      "net.signfinder.test.SignFinderTestClient"
+    ],
+    "modmenu": [
+      "net.signfinder.SignFinderModMenuApi"
+    ]
+  },
+  "mixins": [
+    "signfinder.mixins.json"
+  ],
+  "accessWidener": "signfinder.accesswidener",
+  "depends": {
+    "fabricloader": ">=0.16.14",
+    "fabric-api": ">=0.126.1",
+    "modmenu": "^15.0.0-beta.1",
+    "cloth-config": "^19.0.146",
+    "minecraft": "~1.21.6-beta.3",
+    "java": ">=21"
+  },
+  "breaks": {
+    "wurst": "*",
+    "vulkanmod": "*"
+  },
+  "custom": {
+    "modmenu": {
+      "links": {
+        "modmenu.donate": "https://github.com/sponsors/jiazengp/"
+      }
+    }
+  }
+}
