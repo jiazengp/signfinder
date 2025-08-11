@@ -28,6 +28,10 @@
   "text.autoconfig.signfinder.option.highlight_style.boxes": "Boxes only",
   "text.autoconfig.signfinder.option.highlight_style.lines": "Lines only",
   "text.autoconfig.signfinder.option.highlight_style.lines_and_boxes": "Lines and boxes",
+  "text.autoconfig.signfinder.option.export_format": "Export format",
+  "text.autoconfig.signfinder.option.export_format.@Tooltip": "Controls which format to use for export.\nText: plain text format.\nJSON: JSON format.",
+  "text.autoconfig.signfinder.option.export_format.json": "JSON",
+  "text.autoconfig.signfinder.option.export_format.text": "Text",
   "text.autoconfig.signfinder.option.case_sensitive_search": "Case Sensitive Search",
   "text.autoconfig.signfinder.option.case_sensitive_search.@Tooltip": "Whether search queries should be case sensitive.",
   "text.autoconfig.signfinder.option.enable_regex_search": "Enable Regex Search",
@@ -99,7 +103,7 @@
   "signfinder.export.file_location": "File saved to: %s",
   "signfinder.export.error": "Export failed: %s",
   "signfinder.search.all_signs": "Searching for all signs within %d blocks...",
-  "signfinder.message.export_reminder": "Too many results? Export to Excel for easier viewing!",
-  "signfinder.button.export_excel": "[Export to Excel]",
-  "signfinder.tooltip.export_excel": "Export search results to Excel file"
+  "signfinder.message.export_reminder": "Too many results? Export to file for easier viewing!",
+  "signfinder.button.export_excel": "[Export]",
+  "signfinder.tooltip.export_excel": "Export search results to file"
 }

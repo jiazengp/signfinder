@@ -57,7 +57,9 @@ public class SignFinderConfig implements ConfigData
 	public String[] container_keywords = {};
 	
 	@ConfigEntry.Gui.Tooltip
-	public boolean plausible = true;
+	@ConfigEntry.Gui.EnumHandler(
+		option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+	public SignExportFormat export_format = SignExportFormat.TEXT;
 	
 	@ConfigEntry.Gui.CollapsibleObject
 	@ConfigEntry.Gui.Excluded

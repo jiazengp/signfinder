@@ -35,8 +35,8 @@ public final class SignFinderMod
 	public static final String MOD_ID = "signfinder";
 	public static final Logger LOGGER =
 		LoggerFactory.getLogger(MOD_ID.toUpperCase());
+	public final ConfigHolder<SignFinderConfig> configHolder;
 	
-	private final ConfigHolder<SignFinderConfig> configHolder;
 	private final KeyBinding toggleAutoDetectionKey;
 	private final KeyBinding toggleHighlightingKey;
 	

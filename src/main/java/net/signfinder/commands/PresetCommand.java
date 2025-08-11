@@ -17,19 +17,13 @@ public class PresetCommand extends BaseCommand
 		SignFinderConfig config =
 			SignFinderMod.getInstance().getConfigHolder().getConfig();
 		
-		// 显示标题
 		ctx.getSource().sendFeedback(
 			Text.translatable("signfinder.message.search_presets_title")
 				.formatted(Formatting.YELLOW));
 		ctx.getSource().sendFeedback(Text.literal(""));
 		
-		// 显示文本预设
 		displayTextPresets(ctx, config);
-		
-		// 显示正则预设
 		displayRegexPresets(ctx, config);
-		
-		// 显示使用说明
 		displayUsageInstructions(ctx, config);
 		
 		return 1;

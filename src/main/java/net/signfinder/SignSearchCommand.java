@@ -3,19 +3,14 @@ package net.signfinder;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import me.shedaniel.autoconfig.AutoConfig;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.signfinder.SignSearchEngine.SearchType;
-import net.signfinder.commands.CommandConstants;
-import net.signfinder.commands.ExportCommand;
-import net.signfinder.commands.HighlightCommand;
-import net.signfinder.commands.PageCommand;
-import net.signfinder.commands.PresetCommand;
-import net.signfinder.commands.SearchCommand;
+import net.signfinder.commands.*;
 
 class SignSearchCommand
 {
-	
 	public static void register(
 		CommandDispatcher<FabricClientCommandSource> dispatcher)
 	{
@@ -128,9 +123,18 @@ class SignSearchCommand
 			.then(
 				ClientCommandManager.literal(CommandConstants.SUBCOMMAND_CLEAR)
 					.executes(HighlightCommand::clearResults))
-			// Excel导出命令
 			.then(
 				ClientCommandManager.literal(CommandConstants.SUBCOMMAND_EXPORT)
-					.executes(ExportCommand::executeExport)));
+					.executes(ctx -> ExportCommand.executeExport(ctx,
+						AutoConfig.getConfigHolder(SignFinderConfig.class)
+							.getConfig().export_format))
+					.then(
+						ClientCommandManager
+							.argument("format",
+								SignExportFormatArgument.exportFormat())
+							.executes(
+								ctx -> ExportCommand.executeExport(ctx, null)))
+			
+			));
 	}
 }

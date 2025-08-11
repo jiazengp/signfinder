@@ -8,17 +8,14 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
-import net.signfinder.SignFinderConfig;
-import net.signfinder.SignFinderMod;
-import net.signfinder.SignSearchEngine;
-import net.signfinder.SignSearchResult;
-import net.signfinder.util.ExcelExportUtils;
+import net.signfinder.*;
+import net.signfinder.util.ExportUtils;
 
 public class ExportCommand extends BaseCommand
 {
-	
 	public static int executeExport(
-		CommandContext<FabricClientCommandSource> ctx)
+		CommandContext<FabricClientCommandSource> ctx,
+		SignExportFormat exportFormat)
 	{
 		if(!validatePlayerInWorld(ctx))
 			return 0;
@@ -27,6 +24,8 @@ public class ExportCommand extends BaseCommand
 		if(signFinder == null)
 			return 0;
 		
+		SignExportFormat format = exportFormat == null
+			? SignExportFormatArgument.getFormat(ctx, "format") : exportFormat;
 		SignFinderConfig config = signFinder.getConfigHolder().getConfig();
 		MinecraftClient mc = MinecraftClient.getInstance();
 		
@@ -38,6 +37,8 @@ public class ExportCommand extends BaseCommand
 		// If no search results exist, export all signs within default range
 		if(currentResults == null || currentResults.isEmpty())
 		{
+			if(mc.player == null)
+				return 0;
 			Vec3d playerPos = mc.player.getPos();
 			int defaultRadius = config.default_search_radius;
 			
@@ -54,9 +55,10 @@ public class ExportCommand extends BaseCommand
 				return 1;
 			}
 			
-			boolean success = ExcelExportUtils.INSTANCE.exportToExcel(allSigns,
-				Text.translatable("signfinder.export.all_signs_title")
-					.getString());
+			boolean success = ExportUtils.INSTANCE.exportSignSearchResult(
+				allSigns, Text.translatable("signfinder.export.all_signs_title")
+					.getString(),
+				format);
 			return success ? 0 : 1;
 		}
 		
@@ -66,8 +68,8 @@ public class ExportCommand extends BaseCommand
 				currentQuery != null ? currentQuery
 					: Text.translatable("signfinder.export.unknown_query")
 						.getString()));
-		boolean success = ExcelExportUtils.INSTANCE
-			.exportToExcel(currentResults, currentQuery);
+		boolean success = ExportUtils.INSTANCE
+			.exportSignSearchResult(currentResults, currentQuery, format);
 		return success ? 0 : 1;
 	}
 }
