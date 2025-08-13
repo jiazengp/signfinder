@@ -9,9 +9,11 @@ package net.signfinder.util;
 
 import java.util.Objects;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.WorldChunk;
@@ -28,11 +30,24 @@ public enum ChunkUtils
 			.flatMap(chunk -> chunk.getBlockEntities().values().stream());
 	}
 	
+	public static Stream<Entity> getLoadedEntities()
+	{
+		if(MC.world == null)
+			return Stream.empty();
+		
+		return StreamSupport.stream(MC.world.getEntities().spliterator(),
+			false);
+	}
+	
 	public static Stream<WorldChunk> getLoadedChunks()
 	{
 		int radius = Math.max(2, MC.options.getClampedViewDistance()) + 3;
 		int diameter = radius * 2 + 1;
 		
+		if(MC.player == null)
+		{
+			throw new RuntimeException("The player does not exist");
+		}
 		ChunkPos center = MC.player.getChunkPos();
 		ChunkPos min = new ChunkPos(center.x - radius, center.z - radius);
 		ChunkPos max = new ChunkPos(center.x + radius, center.z + radius);
@@ -55,7 +70,7 @@ public enum ChunkUtils
 			
 			return new ChunkPos(x, z);
 			
-		}).limit(diameter * diameter)
+		}).limit((long)diameter * diameter)
 			.filter(c -> MC.world.isChunkLoaded(c.x, c.z))
 			.map(c -> MC.world.getChunk(c.x, c.z)).filter(Objects::nonNull);
 		
@@ -64,7 +79,7 @@ public enum ChunkUtils
 	
 	public static BlockEntity getLoadedBlockEntity(BlockPos pos)
 	{
-		if(MC.world == null || !MC.world.isChunkLoaded(pos))
+		if(MC.world == null || !MC.world.isChunkLoaded(pos.getX(), pos.getZ()))
 			return null;
 		
 		return MC.world.getBlockEntity(pos);

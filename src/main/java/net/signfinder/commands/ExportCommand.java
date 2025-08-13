@@ -8,7 +8,11 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
-import net.signfinder.*;
+import net.signfinder.EntitySearchResult;
+import net.signfinder.SignExportFormat;
+import net.signfinder.SignFinderConfig;
+import net.signfinder.SignFinderMod;
+import net.signfinder.SignSearchEngine;
 import net.signfinder.util.ExportUtils;
 
 public class ExportCommand extends BaseCommand
@@ -30,46 +34,55 @@ public class ExportCommand extends BaseCommand
 		MinecraftClient mc = MinecraftClient.getInstance();
 		
 		String playerKey = getPlayerCacheKey();
-		List<SignSearchResult> currentResults =
-			CommandUtils.getCachedResults(playerKey);
+		List<EntitySearchResult> currentEntityResults =
+			CommandUtils.getCachedEntityResults(playerKey);
 		String currentQuery = CommandUtils.getCachedQuery(playerKey);
 		
-		// If no search results exist, export all signs within default range
-		if(currentResults == null || currentResults.isEmpty())
+		// Export current search results if available
+		if(currentEntityResults != null && !currentEntityResults.isEmpty())
 		{
-			if(mc.player == null)
-				return 0;
-			Vec3d playerPos = mc.player.getPos();
-			int defaultRadius = config.default_search_radius;
-			
 			ctx.getSource().sendFeedback(
-				Text.translatable("signfinder.export.no_cache", defaultRadius));
-			
-			List<SignSearchResult> allSigns = SignSearchEngine.INSTANCE
-				.findAllSigns(playerPos, defaultRadius);
-			
-			if(allSigns.isEmpty())
-			{
-				ctx.getSource().sendFeedback(Text.translatable(
-					"signfinder.export.no_signs_found", defaultRadius));
-				return 1;
-			}
-			
-			boolean success = ExportUtils.INSTANCE.exportSignSearchResult(
-				allSigns, Text.translatable("signfinder.export.all_signs_title")
-					.getString(),
-				format);
+				Text.translatable("signfinder.export.exporting_results",
+					currentQuery != null ? currentQuery
+						: Text.translatable("signfinder.export.unknown_query")
+							.getString()));
+			boolean success = ExportUtils.INSTANCE.exportEntitySearchResult(
+				currentEntityResults, currentQuery, format);
 			return success ? 0 : 1;
 		}
 		
-		// Export current search results
-		ctx.getSource().sendFeedback(
-			Text.translatable("signfinder.export.exporting_results",
-				currentQuery != null ? currentQuery
-					: Text.translatable("signfinder.export.unknown_query")
-						.getString()));
-		boolean success = ExportUtils.INSTANCE
-			.exportSignSearchResult(currentResults, currentQuery, format);
+		// No search results exist, export according to config settings
+		if(mc.player == null)
+			return 0;
+		Vec3d playerPos = mc.player.getPos();
+		int defaultRadius = config.default_search_radius;
+		
+		// Generate dynamic message based on search range
+		Text searchRangeText =
+			Text.translatable(config.entity_search_range.toString());
+		ctx.getSource()
+			.sendFeedback(Text.translatable("signfinder.export.no_cache",
+				searchRangeText.getString(), defaultRadius));
+		
+		// Search for all entities using empty query (matches everything)
+		SignSearchEngine.SearchQuery searchQuery =
+			new SignSearchEngine.SearchQuery("",
+				SignSearchEngine.SearchType.TEXT, defaultRadius, false);
+		List<EntitySearchResult> allEntities =
+			SignSearchEngine.searchEntities(searchQuery, config);
+		
+		if(allEntities.isEmpty())
+		{
+			ctx.getSource().sendFeedback(
+				Text.translatable("signfinder.export.no_signs_found",
+					searchRangeText.getString(), defaultRadius));
+			return 1;
+		}
+		
+		boolean success = ExportUtils.INSTANCE.exportEntitySearchResult(
+			allEntities,
+			Text.translatable("signfinder.export.all_signs_title").getString(),
+			format);
 		return success ? 0 : 1;
 	}
 }

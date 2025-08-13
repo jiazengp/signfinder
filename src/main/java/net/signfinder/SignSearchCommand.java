@@ -23,7 +23,7 @@ class SignSearchCommand
 					ctx -> SearchCommand.executeSearch(ctx, null, null, null))
 				.then(
 					ClientCommandManager
-						.argument("radius", IntegerArgumentType.integer(1, 200))
+						.argument("radius", IntegerArgumentType.integer(1))
 						.executes(ctx -> SearchCommand.executeSearch(ctx,
 							IntegerArgumentType.getInteger(ctx, "radius"), null,
 							null))
@@ -44,7 +44,7 @@ class SignSearchCommand
 					.executes(ctx -> SearchCommand.executeSearch(ctx, null,
 						null, SearchType.REGEX))
 					.then(ClientCommandManager
-						.argument("radius", IntegerArgumentType.integer(1, 200))
+						.argument("radius", IntegerArgumentType.integer(1))
 						.executes(ctx -> SearchCommand.executeSearch(ctx,
 							IntegerArgumentType.getInteger(ctx, "radius"), null,
 							SearchType.REGEX))
@@ -64,7 +64,7 @@ class SignSearchCommand
 					.executes(ctx -> SearchCommand.executeSearch(ctx, null,
 						null, SearchType.ARRAY))
 					.then(ClientCommandManager
-						.argument("radius", IntegerArgumentType.integer(1, 200))
+						.argument("radius", IntegerArgumentType.integer(1))
 						.executes(ctx -> SearchCommand.executeSearch(ctx,
 							IntegerArgumentType.getInteger(ctx, "radius"), null,
 							SearchType.ARRAY))
@@ -84,7 +84,7 @@ class SignSearchCommand
 					.executes(ctx -> SearchCommand.executeSearch(ctx, null,
 						null, SearchType.PRESET))
 					.then(ClientCommandManager
-						.argument("radius", IntegerArgumentType.integer(1, 200))
+						.argument("radius", IntegerArgumentType.integer(1))
 						.executes(ctx -> SearchCommand.executeSearch(ctx,
 							IntegerArgumentType.getInteger(ctx, "radius"), null,
 							SearchType.PRESET)))))

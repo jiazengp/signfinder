@@ -5,9 +5,9 @@ import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.signfinder.EntitySearchResult;
 import net.signfinder.SignFinderConfig;
 import net.signfinder.SignFinderMod;
-import net.signfinder.SignSearchResult;
 
 import java.util.List;
 
@@ -19,10 +19,10 @@ public class PageCommand extends BaseCommand
 			return 0;
 		
 		String cacheKey = getPlayerCacheKey();
-		List<SignSearchResult> results =
-			CommandUtils.getCachedResults(cacheKey);
+		List<EntitySearchResult> entityResults =
+			CommandUtils.getCachedEntityResults(cacheKey);
 		
-		if(results == null || results.isEmpty())
+		if(entityResults == null || entityResults.isEmpty())
 		{
 			ctx.getSource().sendFeedback(
 				Text.translatable("signfinder.error.no_search_results")
@@ -37,8 +37,8 @@ public class PageCommand extends BaseCommand
 			config.default_search_radius);
 		
 		CommandUtils.setCurrentPage(cacheKey, page);
-		ResultDisplayCommand.displayResults(ctx.getSource(), results, page,
-			config, searchRadius);
+		ResultDisplayCommand.displayEntityResults(ctx.getSource(),
+			entityResults, page, config, searchRadius);
 		
 		return 1;
 	}
@@ -50,10 +50,10 @@ public class PageCommand extends BaseCommand
 			return 0;
 		
 		String cacheKey = getPlayerCacheKey();
-		List<SignSearchResult> results =
-			CommandUtils.getCachedResults(cacheKey);
+		List<EntitySearchResult> entityResults =
+			CommandUtils.getCachedEntityResults(cacheKey);
 		
-		if(results == null || results.isEmpty())
+		if(entityResults == null || entityResults.isEmpty())
 		{
 			ctx.getSource().sendFeedback(
 				Text.translatable("signfinder.error.no_search_results")
@@ -67,8 +67,8 @@ public class PageCommand extends BaseCommand
 		int searchRadius = CommandUtils.getSearchRadius(cacheKey,
 			config.default_search_radius);
 		
-		ResultDisplayCommand.displayResults(ctx.getSource(), results,
-			currentPage, config, searchRadius);
+		ResultDisplayCommand.displayEntityResults(ctx.getSource(),
+			entityResults, currentPage, config, searchRadius);
 		
 		return 1;
 	}

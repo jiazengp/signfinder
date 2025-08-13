@@ -6,13 +6,12 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.math.Vec3d;
+import net.signfinder.EntitySearchResult;
 import net.signfinder.SignFinderConfig;
 import net.signfinder.SignFinderMod;
 import net.signfinder.SignSearchEngine;
 import net.signfinder.SignSearchEngine.SearchQuery;
 import net.signfinder.SignSearchEngine.SearchType;
-import net.signfinder.SignSearchResult;
 
 import java.util.List;
 
@@ -51,8 +50,10 @@ public class SearchCommand extends BaseCommand
 		
 		SearchQuery query = new SearchQuery(queryString, searchType,
 			searchRadius, config.case_sensitive_search);
-		List<SignSearchResult> results =
-			SignSearchEngine.searchSigns(query, config);
+		
+		// Always use unified entity search system
+		List<EntitySearchResult> entityResults =
+			SignSearchEngine.searchEntities(query, config);
 		
 		// 保存预设
 		if(presetName != null && !presetName.isEmpty())
@@ -66,23 +67,21 @@ public class SearchCommand extends BaseCommand
 		
 		// 缓存结果
 		String cacheKey = getPlayerCacheKey();
-		// 保持在当前页面，如果没有缓存则从第1页开始
 		int currentPage = CommandUtils.getCurrentPage(cacheKey);
-		// 确保页面有效
-		int totalPages = CommandUtils.calculateTotalPages(results.size(),
+		int totalPages = CommandUtils.calculateTotalPages(entityResults.size(),
 			config.max_results_per_page);
 		currentPage = Math.max(1, Math.min(currentPage, totalPages));
-		CommandUtils.cacheSearchResults(cacheKey, results, currentPage,
-			searchRadius);
+		CommandUtils.cacheEntitySearchResults(cacheKey, entityResults,
+			currentPage, searchRadius);
 		CommandUtils.cacheSearchQuery(cacheKey, queryString);
 		
 		// 将搜索结果传递给SignFinderMod进行渲染
-		signFinder.setSearchResults(results);
+		signFinder.setEntitySearchResults(entityResults);
 		
-		ResultDisplayCommand.displayResults(ctx.getSource(), results,
-			currentPage, config, searchRadius);
+		ResultDisplayCommand.displayEntityResults(ctx.getSource(),
+			entityResults, currentPage, config, searchRadius);
 		
-		return results.size();
+		return entityResults.size();
 	}
 	
 	public static int executeSearchAll(
@@ -101,16 +100,18 @@ public class SearchCommand extends BaseCommand
 		if(mc.player == null)
 			return 0;
 		
-		Vec3d playerPos = mc.player.getPos();
 		int searchRadius = config.default_search_radius;
 		
 		ctx.getSource().sendFeedback(
 			Text.translatable("signfinder.search.all_signs", searchRadius));
 		
-		List<SignSearchResult> results =
-			SignSearchEngine.INSTANCE.findAllSigns(playerPos, searchRadius);
+		// Use empty query to match all entities (based on config)
+		SearchQuery query =
+			new SearchQuery("", SearchType.TEXT, searchRadius, false);
+		List<EntitySearchResult> entityResults =
+			SignSearchEngine.searchEntities(query, config);
 		
-		if(results.isEmpty())
+		if(entityResults.isEmpty())
 		{
 			ctx.getSource().sendFeedback(Text.translatable(
 				"signfinder.message.no_matching_signs", searchRadius));
@@ -121,16 +122,16 @@ public class SearchCommand extends BaseCommand
 		String queryString =
 			Text.translatable("signfinder.export.all_signs_title").getString();
 		int currentPage = 1;
-		CommandUtils.cacheSearchResults(cacheKey, results, currentPage,
-			searchRadius);
+		CommandUtils.cacheEntitySearchResults(cacheKey, entityResults,
+			currentPage, searchRadius);
 		CommandUtils.cacheSearchQuery(cacheKey, queryString);
 		
-		signFinder.setSearchResults(results);
+		signFinder.setEntitySearchResults(entityResults);
 		
-		ResultDisplayCommand.displayResults(ctx.getSource(), results,
-			currentPage, config, searchRadius);
+		ResultDisplayCommand.displayEntityResults(ctx.getSource(),
+			entityResults, currentPage, config, searchRadius);
 		
-		return results.size();
+		return entityResults.size();
 	}
 	
 	private static void savePreset(String presetName, String query,

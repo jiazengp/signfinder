@@ -4,22 +4,30 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.signfinder.EntitySearchResult;
+import net.signfinder.SignExportFormat;
 import net.signfinder.SignFinderConfig;
-import net.signfinder.SignSearchResult;
 
 import java.util.List;
 
 public class ResultDisplayCommand
 {
-	public static void displayResults(FabricClientCommandSource source,
-		List<SignSearchResult> results, int page, SignFinderConfig config,
+	public static void displayEntityResults(FabricClientCommandSource source,
+		List<EntitySearchResult> results, int page, SignFinderConfig config,
 		int searchRadius)
+	{
+		displayGenericResults(source, results, page, config, searchRadius,
+			CommandUtils::createEntityResultText);
+	}
+	
+	private static <T> void displayGenericResults(
+		FabricClientCommandSource source, List<T> results, int page,
+		SignFinderConfig config, int searchRadius,
+		ResultTextCreator<T> textCreator)
 	{
 		if(results.isEmpty())
 		{
-			source.sendFeedback(
-				Text.translatable("signfinder.message.no_matching_signs",
-					searchRadius).formatted(Formatting.YELLOW));
+			displayEmptyResults(source, searchRadius);
 			return;
 		}
 		
@@ -42,12 +50,10 @@ public class ResultDisplayCommand
 		// 显示结果
 		for(int i = startIndex; i < endIndex; i++)
 		{
-			MutableText text =
-				CommandUtils.createResultText(results.get(i), i + 1);
+			MutableText text = textCreator.createText(results.get(i), i + 1);
 			source.sendFeedback(text);
 		}
 		
-		// 分页控制
 		if(totalPages > 1)
 		{
 			MutableText pageControl =
@@ -55,14 +61,29 @@ public class ResultDisplayCommand
 			source.sendFeedback(pageControl);
 		}
 		
-		// Excel导出提醒 - 超过3页时显示
 		if(totalPages > 3)
 		{
-			MutableText exportReminder =
-				Text.translatable("signfinder.message.export_reminder")
-					.formatted(Formatting.GOLD).append(" ")
-					.append(CommandUtils.createExportButton());
+			MutableText exportReminder = Text
+				.translatable("signfinder.message.export_reminder")
+				.formatted(Formatting.GOLD).append(" ")
+				.append(CommandUtils.createExportButton(SignExportFormat.JSON))
+				.append(" ")
+				.append(CommandUtils.createExportButton(SignExportFormat.TEXT));
 			source.sendFeedback(exportReminder);
 		}
+	}
+	
+	@FunctionalInterface
+	private interface ResultTextCreator<T>
+	{
+		MutableText createText(T result, int index);
+	}
+	
+	private static void displayEmptyResults(FabricClientCommandSource source,
+		int searchRadius)
+	{
+		source.sendFeedback(Text
+			.translatable("signfinder.message.no_matching_signs", searchRadius)
+			.formatted(Formatting.YELLOW));
 	}
 }

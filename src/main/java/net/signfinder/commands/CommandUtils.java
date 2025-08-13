@@ -5,7 +5,9 @@ import net.minecraft.text.HoverEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.signfinder.SignSearchResult;
+import net.minecraft.util.math.BlockPos;
+import net.signfinder.EntitySearchResult;
+import net.signfinder.SignExportFormat;
 
 import java.util.List;
 import java.util.Map;
@@ -14,7 +16,7 @@ import java.util.Iterator;
 
 public class CommandUtils
 {
-	private static final Map<String, List<SignSearchResult>> searchResultCache =
+	private static final Map<String, List<EntitySearchResult>> entitySearchResultCache =
 		new ConcurrentHashMap<>();
 	private static final Map<String, Integer> currentPageCache =
 		new ConcurrentHashMap<>();
@@ -26,17 +28,22 @@ public class CommandUtils
 		new ConcurrentHashMap<>();
 	
 	private static final int MAX_CACHE_SIZE = 50;
+	private static final int MAX_CACHE_SIZE_HARD_LIMIT = 100; // 硬限制，达到后强制清理
 	private static final long CACHE_EXPIRY_TIME = 300000; // 5分钟
+	private static final long CACHE_CHECK_INTERVAL = 60000; // 1分钟检查一次
+	private static long lastCacheCheck = 0;
 	
-	public static void cacheSearchResults(String playerKey,
-		List<SignSearchResult> results, int currentPage, int searchRadius)
+	public static void cacheEntitySearchResults(String playerKey,
+		List<EntitySearchResult> results, int currentPage, int searchRadius)
 	{
-		if(searchResultCache.size() > MAX_CACHE_SIZE)
+		performCacheMaintenanceIfNeeded();
+		
+		if(entitySearchResultCache.size() >= MAX_CACHE_SIZE_HARD_LIMIT)
 		{
-			cleanExpiredCache();
+			cleanOldestCacheEntries();
 		}
 		
-		searchResultCache.put(playerKey, results);
+		entitySearchResultCache.put(playerKey, results);
 		currentPageCache.put(playerKey, currentPage);
 		searchRadiusCache.put(playerKey, searchRadius);
 		cacheTimestamps.put(playerKey, System.currentTimeMillis());
@@ -52,9 +59,10 @@ public class CommandUtils
 		return searchQueryCache.get(playerKey);
 	}
 	
-	public static List<SignSearchResult> getCachedResults(String playerKey)
+	public static List<EntitySearchResult> getCachedEntityResults(
+		String playerKey)
 	{
-		return searchResultCache.get(playerKey);
+		return entitySearchResultCache.get(playerKey);
 	}
 	
 	public static int getCurrentPage(String playerKey)
@@ -69,7 +77,7 @@ public class CommandUtils
 	
 	public static void clearCache(String playerKey)
 	{
-		searchResultCache.remove(playerKey);
+		entitySearchResultCache.remove(playerKey);
 		currentPageCache.remove(playerKey);
 		searchRadiusCache.remove(playerKey);
 		searchQueryCache.remove(playerKey);
@@ -79,14 +87,13 @@ public class CommandUtils
 	// 清理所有缓存
 	public static void clearAllCaches()
 	{
-		searchResultCache.clear();
+		entitySearchResultCache.clear();
 		currentPageCache.clear();
 		searchRadiusCache.clear();
 		searchQueryCache.clear();
 		cacheTimestamps.clear();
 	}
 	
-	// 清理过期缓存
 	private static void cleanExpiredCache()
 	{
 		long currentTime = System.currentTimeMillis();
@@ -108,10 +115,38 @@ public class CommandUtils
 		}
 	}
 	
-	// 定期清理过期缓存的公共方法
 	public static void performPeriodicCleanup()
 	{
 		cleanExpiredCache();
+	}
+	
+	private static void performCacheMaintenanceIfNeeded()
+	{
+		long currentTime = System.currentTimeMillis();
+		if(currentTime - lastCacheCheck > CACHE_CHECK_INTERVAL)
+		{
+			lastCacheCheck = currentTime;
+			if(entitySearchResultCache.size() > MAX_CACHE_SIZE)
+			{
+				cleanExpiredCache();
+			}
+		}
+	}
+	
+	private static void cleanOldestCacheEntries()
+	{
+		int targetSize = MAX_CACHE_SIZE / 2; // 清理到一半大小
+		cacheTimestamps.entrySet().stream().sorted(Map.Entry.comparingByValue())
+			.limit(entitySearchResultCache.size() - targetSize)
+			.map(Map.Entry::getKey).forEach(CommandUtils::clearCache);
+	}
+	
+	// 获取缓存统计信息
+	public static String getCacheStats()
+	{
+		return String.format("Cache: %d/%d entries, %d queries",
+			entitySearchResultCache.size(), MAX_CACHE_SIZE_HARD_LIMIT,
+			searchQueryCache.size());
 	}
 	
 	public static void setCurrentPage(String playerKey, int page)
@@ -119,24 +154,33 @@ public class CommandUtils
 		currentPageCache.put(playerKey, page);
 	}
 	
-	public static MutableText createResultText(SignSearchResult result,
+	public static MutableText createEntityResultText(EntitySearchResult result,
 		int index)
 	{
-		MutableText text = (MutableText)result.getFormattedResult(index);
+		String fullText =
+			result.getEntityType() == EntitySearchResult.EntityType.SIGN
+				? String.join("\n", result.getSignText())
+				: result.getItemName();
+		
+		return createGenericResultText(result.getFormattedResult(index),
+			result.getPos(), fullText);
+	}
+	
+	private static MutableText createGenericResultText(Text formattedResult,
+		BlockPos pos, String fullText)
+	{
+		MutableText text = (MutableText)formattedResult;
 		
 		text.styled(style -> style
 			.withHoverEvent(new HoverEvent.ShowText(Text
-				.translatable("signfinder.tooltip.target_coords",
-					result.getPos().getX(), result.getPos().getY(),
-					result.getPos().getZ())
+				.translatable("signfinder.tooltip.target_coords", pos.getX(),
+					pos.getY(), pos.getZ())
 				.append("\n")
 				.append(Text.translatable("signfinder.tooltip.full_text"))
-				.append("\n" + String.join("\n", result.getSignText()))
-				.append("\n")
+				.append("\n" + fullText).append("\n")
 				.append(Text.translatable("signfinder.tooltip.click_to_copy"))))
-			.withClickEvent(
-				new ClickEvent.CopyToClipboard(result.getPos().getX() + ","
-					+ result.getPos().getY() + "," + result.getPos().getZ())));
+			.withClickEvent(new ClickEvent.CopyToClipboard(
+				pos.getX() + "," + pos.getY() + "," + pos.getZ())));
 		
 		text.append(" ");
 		
@@ -147,8 +191,7 @@ public class CommandUtils
 				.withClickEvent(
 					new ClickEvent.RunCommand(CommandConstants.COMMAND_PREFIX
 						+ " " + CommandConstants.SUBCOMMAND_REMOVE + " "
-						+ result.getPos().getX() + " " + result.getPos().getY()
-						+ " " + result.getPos().getZ()))));
+						+ pos.getX() + " " + pos.getY() + " " + pos.getZ()))));
 		
 		text.append(" ");
 		
@@ -159,8 +202,7 @@ public class CommandUtils
 				.withClickEvent(
 					new ClickEvent.RunCommand(CommandConstants.COMMAND_PREFIX
 						+ " " + CommandConstants.SUBCOMMAND_COLOR + " "
-						+ result.getPos().getX() + " " + result.getPos().getY()
-						+ " " + result.getPos().getZ()))));
+						+ pos.getX() + " " + pos.getY() + " " + pos.getZ()))));
 		
 		return text;
 	}
@@ -191,7 +233,111 @@ public class CommandUtils
 							+ (currentPage + 1)))));
 		}
 		
+		// Add clickable page numbers
+		if(totalPages > 1)
+		{
+			pageControl
+				.append(createPageNumberControls(currentPage, totalPages));
+		}
+		
 		return pageControl;
+	}
+	
+	private static MutableText createPageNumberControls(int currentPage,
+		int totalPages)
+	{
+		MutableText pageNumbers = Text.literal(" (");
+		
+		// Calculate page range to display
+		int[] pageRange = calculatePageRange(currentPage, totalPages);
+		int startPage = pageRange[0];
+		int endPage = pageRange[1];
+		
+		// Add ellipsis at the beginning if we're not showing from page 1
+		if(startPage > 1)
+		{
+			pageNumbers.append(createClickablePageNumber(1, currentPage));
+			if(startPage > 2)
+			{
+				pageNumbers.append(Text.literal(", ..."));
+			}
+			pageNumbers.append(Text.literal(", "));
+		}
+		
+		// Add page numbers in range
+		for(int page = startPage; page <= endPage; page++)
+		{
+			if(page > startPage)
+			{
+				pageNumbers.append(Text.literal(", "));
+			}
+			
+			if(page == currentPage)
+			{
+				// Current page - highlighted, no click
+				pageNumbers.append(Text.literal(String.valueOf(page))
+					.styled(style -> style.withColor(Formatting.DARK_AQUA)));
+			}else
+			{
+				pageNumbers
+					.append(createClickablePageNumber(page, currentPage));
+			}
+		}
+		
+		// Add ellipsis at the end if we're not showing to the last page
+		if(endPage < totalPages)
+		{
+			if(endPage < totalPages - 1)
+			{
+				pageNumbers.append(Text.literal(", ..."));
+			}
+			pageNumbers.append(Text.literal(", "));
+			pageNumbers
+				.append(createClickablePageNumber(totalPages, currentPage));
+		}
+		
+		pageNumbers.append(Text.literal(")"));
+		return pageNumbers;
+	}
+	
+	private static MutableText createClickablePageNumber(int page,
+		int currentPage)
+	{
+		return Text.literal(String.valueOf(page)).styled(style -> style
+			.withColor(Formatting.AQUA)
+			.withHoverEvent(new HoverEvent.ShowText(
+				Text.translatable("signfinder.tooltip.goto_page", page)))
+			.withClickEvent(
+				new ClickEvent.RunCommand(CommandConstants.COMMAND_PREFIX + " "
+					+ CommandConstants.SUBCOMMAND_PAGE + " " + page)));
+	}
+	
+	private static int[] calculatePageRange(int currentPage, int totalPages)
+	{
+		if(totalPages <= 6)
+		{
+			// Show all pages if 6 or fewer
+			return new int[]{1, totalPages};
+		}
+		
+		// Show current page ± 3 pages
+		int radius = 3;
+		int startPage = Math.max(1, currentPage - radius);
+		int endPage = Math.min(totalPages, currentPage + radius);
+		
+		// Adjust range to always show 7 pages when possible
+		if(endPage - startPage + 1 < 7)
+		{
+			if(startPage == 1)
+			{
+				endPage = Math.min(totalPages, startPage + 6);
+			}else if(endPage == totalPages)
+			{
+				startPage = Math.max(1, endPage - 6);
+			}
+		}
+		
+		return new int[]{startPage, endPage};
 	}
 	
 	public static int calculateTotalPages(int resultCount,
@@ -208,14 +354,18 @@ public class CommandUtils
 		return new int[]{startIndex, endIndex};
 	}
 	
-	public static MutableText createExportButton()
+	public static MutableText createExportButton(
+		SignExportFormat signExportFormat)
 	{
-		return Text.translatable("signfinder.button.export_excel")
+		return Text
+			.translatable("signfinder.button.export",
+				Text.translatable(signExportFormat.toString()))
 			.styled(style -> style.withColor(Formatting.BLUE)
 				.withHoverEvent(new HoverEvent.ShowText(
-					Text.translatable("signfinder.tooltip.export_excel")))
+					Text.translatable("signfinder.tooltip.export")))
 				.withClickEvent(
 					new ClickEvent.RunCommand(CommandConstants.COMMAND_PREFIX
-						+ " " + CommandConstants.SUBCOMMAND_EXPORT)));
+						+ " " + CommandConstants.SUBCOMMAND_EXPORT + " "
+						+ signExportFormat.name())));
 	}
 }

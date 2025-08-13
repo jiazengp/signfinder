@@ -6,17 +6,23 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.lang.ref.WeakReference;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.signfinder.util.ChunkUtils;
+import net.signfinder.util.ItemFrameUtils;
 
 public class SignSearchEngine
 {
 	public static final SignSearchEngine INSTANCE = new SignSearchEngine();
 	private static final MinecraftClient MC = MinecraftClient.getInstance();
+	private static final Logger LOGGER =
+		LoggerFactory.getLogger("SignSearchEngine");
 	
 	// 缓存系统 - 使用WeakReference避免内存泄漏
 	private static final Map<BlockPos, WeakReference<CachedSignData>> signCache =
@@ -118,14 +124,69 @@ public class SignSearchEngine
 		return results;
 	}
 	
-	// 优化后的搜索方法 - 直接使用ChunkUtils获取已加载的告示牌
+	public static List<EntitySearchResult> searchEntities(
+		SearchQuery searchQuery, SignFinderConfig config)
+	{
+		List<EntitySearchResult> results = new ArrayList<>();
+		Vec3d playerPos = Objects.requireNonNull(MC.player).getPos();
+		
+		EntitySearchRange searchRange = config.entity_search_range;
+		
+		if(searchRange.includesSigns())
+		{
+			List<SignBlockEntity> signs =
+				findSignsInRadiusOptimized(playerPos, searchQuery.radius);
+			
+			for(SignBlockEntity sign : signs)
+			{
+				CachedSignData signData = getCachedSignData(sign);
+				
+				if(signData == null)
+					continue;
+				
+				if(matchesQuery(signData.combinedText, searchQuery, config, 0))
+				{
+					results.add(
+						new EntitySearchResult(sign, playerPos, signData.lines,
+							signData.combinedText, config.text_preview_length));
+				}
+			}
+		}
+		
+		if(searchRange.includesItemFrames())
+		{
+			List<ItemFrameEntity> itemFrames =
+				findItemFramesInRadius(playerPos, searchQuery.radius);
+			
+			for(ItemFrameEntity itemFrame : itemFrames)
+			{
+				if(!isItemFrameStillValid(itemFrame))
+					continue;
+				
+				String itemName = ItemFrameUtils.getItemFrameItemName(itemFrame,
+					searchQuery.caseSensitive);
+				
+				if(!itemName.isEmpty()
+					&& matchesQuery(itemName, searchQuery, config, 0))
+				{
+					results.add(new EntitySearchResult(itemFrame, playerPos,
+						itemName, itemName, config.text_preview_length));
+				}
+			}
+		}
+		
+		results
+			.sort(Comparator.comparingDouble(EntitySearchResult::getDistance));
+		
+		return results;
+	}
+	
 	private static List<SignBlockEntity> findSignsInRadiusOptimized(
 		Vec3d center, int radius)
 	{
 		List<SignBlockEntity> signs = new ArrayList<>();
 		double radiusSq = radius * radius;
 		
-		// 直接从已加载的区块中获取告示牌，避免逐个坐标检查
 		ChunkUtils.getLoadedBlockEntities().forEach(blockEntity -> {
 			if(blockEntity instanceof SignBlockEntity signEntity)
 			{
@@ -140,19 +201,46 @@ public class SignSearchEngine
 		return signs;
 	}
 	
-	// 获取缓存的告示牌数据
+	private static List<ItemFrameEntity> findItemFramesInRadius(Vec3d center,
+		int radius)
+	{
+		List<ItemFrameEntity> itemFrames = new ArrayList<>();
+		double radiusSq = radius * radius;
+		
+		ChunkUtils.getLoadedEntities().forEach(entity -> {
+			if(entity instanceof ItemFrameEntity itemFrame
+				&& ItemFrameUtils.hasItem(itemFrame))
+			{
+				Vec3d itemFramePos = itemFrame.getPos();
+				if(center.squaredDistanceTo(itemFramePos) <= radiusSq)
+				{
+					itemFrames.add(itemFrame);
+				}
+			}
+		});
+		
+		return itemFrames;
+	}
+	
 	private static CachedSignData getCachedSignData(SignBlockEntity sign)
 	{
 		BlockPos pos = sign.getPos();
 		WeakReference<CachedSignData> weakRef = signCache.get(pos);
 		CachedSignData cached = weakRef != null ? weakRef.get() : null;
 		
-		if(cached != null && cached.isValid())
+		// 检查缓存是否有效且告示牌仍然存在
+		if(cached != null && cached.isValid() && isSignStillValid(sign))
 		{
 			return cached;
 		}
 		
-		// 缓存未命中或已过期，重新提取数据
+		// 如果告示牌不再有效，清理缓存
+		if(!isSignStillValid(sign))
+		{
+			signCache.remove(pos);
+			return null;
+		}
+		
 		String[] lines = extractSignText(sign);
 		String combinedText = String.join(" ", lines);
 		CachedSignData newData = new CachedSignData(lines, combinedText);
@@ -168,6 +256,26 @@ public class SignSearchEngine
 		return newData;
 	}
 	
+	// 检查告示牌是否仍然有效
+	private static boolean isSignStillValid(SignBlockEntity sign)
+	{
+		if(MC.world == null || sign == null)
+			return false;
+		
+		// 检查世界中该位置是否仍有相同的告示牌实体
+		return MC.world.getBlockEntity(sign.getPos()) == sign;
+	}
+	
+	// 检查物品展示框是否仍然有效
+	private static boolean isItemFrameStillValid(ItemFrameEntity itemFrame)
+	{
+		if(MC.world == null || itemFrame == null)
+			return false;
+		
+		// 检查实体是否仍然存活且在正确位置
+		return !itemFrame.isRemoved() && ItemFrameUtils.hasItem(itemFrame);
+	}
+	
 	private static String[] extractSignText(SignBlockEntity sign)
 	{
 		String[] lines = new String[4];
@@ -179,7 +287,6 @@ public class SignSearchEngine
 		return lines;
 	}
 	
-	// 清理过期的缓存项
 	private static void cleanExpiredCache()
 	{
 		signCache.entrySet().removeIf(entry -> {
@@ -213,8 +320,18 @@ public class SignSearchEngine
 				return pattern.matcher(searchText).find();
 			}catch(PatternSyntaxException e)
 			{
-				// 正则表达式错误时回退到文本搜索
+				// 记录正则表达式错误并回退到文本搜索
+				LOGGER.warn(
+					"Invalid regex pattern '{}': {}. Falling back to text search.",
+					queryText, e.getMessage());
 				return searchText.contains(queryText);
+			}catch(Exception e)
+			{
+				// 记录其他异常
+				LOGGER.error(
+					"Unexpected error during regex matching for pattern '{}': {}",
+					queryText, e.getMessage());
+				return false;
 			}
 			
 			case ARRAY:

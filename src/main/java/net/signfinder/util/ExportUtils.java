@@ -13,14 +13,21 @@ import com.google.gson.GsonBuilder;
 import net.fabricmc.loader.api.FabricLoader;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.HoverEvent;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import net.signfinder.EntitySearchResult;
 import net.signfinder.SignExportFormat;
-import net.signfinder.SignFinderConstants;
 import net.signfinder.SignSearchResult;
 
 public enum ExportUtils
 {
 	INSTANCE;
+	
+	public static final String DOWNLOADS_FOLDER_NAME = "downloads";
+	public static final String EXPORT_FILE_PREFIX = "signfinder_export_";
 	
 	private static final DateTimeFormatter TIMESTAMP_FORMAT =
 		DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
@@ -28,7 +35,44 @@ public enum ExportUtils
 	private static Path getDownloadsPath()
 	{
 		return FabricLoader.getInstance().getGameDir()
-			.resolve(SignFinderConstants.DOWNLOADS_FOLDER_NAME);
+			.resolve(DOWNLOADS_FOLDER_NAME);
+	}
+	
+	// Export method for EntitySearchResult - converts to SignSearchResult
+	// format
+	public boolean exportEntitySearchResult(List<EntitySearchResult> results,
+		String searchQuery, SignExportFormat exportFormat)
+	{
+		List<SignSearchResult> convertedResults = new ArrayList<>();
+		for(EntitySearchResult entityResult : results)
+		{
+			SignSearchResult converted =
+				convertToSignSearchResult(entityResult);
+			convertedResults.add(converted);
+		}
+		return exportSignSearchResult(convertedResults, searchQuery,
+			exportFormat);
+	}
+	
+	// Convert EntitySearchResult to SignSearchResult for export compatibility
+	private SignSearchResult convertToSignSearchResult(
+		EntitySearchResult entityResult)
+	{
+		if(entityResult.getEntityType() == EntitySearchResult.EntityType.SIGN)
+		{
+			// For signs, use the original sign text
+			return new SignSearchResult(entityResult.getPos(),
+				MinecraftClient.getInstance().player.getPos(),
+				entityResult.getSignText(), entityResult.getMatchedText(), 20);
+		}else
+		{
+			// For item frames, create minimal text array with item name only
+			String[] itemFrameText = {entityResult.getItemName(), "", "", ""};
+			
+			return new SignSearchResult(entityResult.getPos(),
+				MinecraftClient.getInstance().player.getPos(), itemFrameText,
+				entityResult.getMatchedText(), 20);
+		}
 	}
 	
 	public boolean exportSignSearchResult(List<SignSearchResult> results,
@@ -47,21 +91,21 @@ public enum ExportUtils
 		
 		try
 		{
-			
-			LocalDateTime exportTime = LocalDateTime.now();
-			String timestamp = exportTime.format(TIMESTAMP_FORMAT);
-			String formattedExportTime = exportTime
-				.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+			ExportContext context =
+				createExportContext(searchQuery, exportFormat);
+			Path filePath = createExportFile(context);
 			
 			if(exportFormat.isJsonFormat())
 			{
-				return exportToJson(results, searchQuery, mc, timestamp,
-					formattedExportTime);
+				exportToJsonFile(results, context, filePath);
 			}else
 			{
-				return exportToText(results, searchQuery, mc, timestamp,
-					formattedExportTime);
+				exportToTextFile(results, context, filePath);
 			}
+			
+			sendExportSuccessMessages(mc, results.size(), context.fileName,
+				filePath);
+			return true;
 		}catch(Exception e)
 		{
 			mc.player.sendMessage(
@@ -71,118 +115,158 @@ public enum ExportUtils
 		}
 	}
 	
-	private boolean exportToText(List<SignSearchResult> results,
-		String searchQuery, MinecraftClient mc, String timestamp,
-		String formattedExportTime) throws IOException
+	private void exportToTextFile(List<SignSearchResult> results,
+		ExportContext context, Path filePath) throws IOException
 	{
-		Path downloadsPath = getDownloadsPath();
-		Files.createDirectories(downloadsPath);
-		
-		String fileName =
-			SignFinderConstants.EXPORT_FILE_PREFIX + timestamp + ".txt";
-		Path filePath = downloadsPath.resolve(fileName);
-		
 		StringBuilder sb = new StringBuilder();
 		
-		String worldName = mc.world != null
-			? mc.world.getRegistryKey().getValue().toString() : "Unknown";
+		// Add header information
+		sb.append(
+			String.format("Search Query: %s | World: %s | Export Time: %s\n\n",
+				context.searchQuery, context.worldName,
+				context.formattedExportTime));
 		
-		String infoText =
-			String.format("Search Query: %s | World: %s | Export Time: %s",
-				searchQuery != null ? searchQuery : "All Signs", worldName,
-				formattedExportTime);
-		sb.append(infoText).append("\n\n");
-		
+		// Add table headers
 		String[] headers = {"Index", "X", "Y", "Z", "Distance", "Line 1",
 			"Line 2", "Line 3", "Line 4", "Full Text", "Matched Text"};
 		sb.append(String.join("\t", headers)).append("\n");
 		
+		// Add data rows
 		for(int i = 0; i < results.size(); i++)
 		{
 			SignSearchResult result = results.get(i);
-			String[] signText = result.getSignText() != null
-				? result.getSignText() : new String[0];
-			String fullText = String.join(" ", signText);
-			String matchedText =
-				result.getMatchedText() != null ? result.getMatchedText() : "";
-			
-			String[] columns = new String[11];
-			columns[0] = String.valueOf(i + 1); // Index
-			columns[1] = String.valueOf(result.getPos().getX());
-			columns[2] = String.valueOf(result.getPos().getY());
-			columns[3] = String.valueOf(result.getPos().getZ());
-			columns[4] =
-				String.format("%.1f", roundToOneDecimal(result.getDistance()));
-			for(int j = 0; j < 4; j++)
-			{
-				columns[5 + j] = j < signText.length ? signText[j] : "";
-			}
-			columns[9] = fullText;
-			columns[10] = matchedText;
-			
-			sb.append(String.join("\t", columns)).append("\n");
+			appendTextRow(sb, result, i + 1);
 		}
 		
 		Files.writeString(filePath, sb.toString(), StandardCharsets.UTF_8);
-		
-		Objects.requireNonNull(mc.player).sendMessage(Text.translatable(
-			"signfinder.export.success", results.size(), fileName), false);
-		mc.player.sendMessage(Text.translatable(
-			"signfinder.export.file_location", filePath.toString()), false);
-		return true;
 	}
 	
-	private boolean exportToJson(List<SignSearchResult> results,
-		String searchQuery, MinecraftClient mc, String timestamp,
-		String formattedExportTime) throws IOException
+	private void exportToJsonFile(List<SignSearchResult> results,
+		ExportContext context, Path filePath) throws IOException
 	{
-		Path downloadsPath = getDownloadsPath();
-		Files.createDirectories(downloadsPath);
-		
-		String fileName =
-			SignFinderConstants.EXPORT_FILE_PREFIX + timestamp + ".json";
-		Path filePath = downloadsPath.resolve(fileName);
-		
-		Map<String, Object> exportData = new HashMap<>();
-		exportData.put("searchQuery",
-			searchQuery != null ? searchQuery : "All Signs");
-		exportData.put("world", mc.world != null
-			? mc.world.getRegistryKey().getValue().toString() : "Unknown");
-		exportData.put("exportTime", formattedExportTime);
-		
-		ArrayList<Map<String, Object>> resultList = new ArrayList<>();
-		for(int i = 0; i < results.size(); i++)
-		{
-			SignSearchResult r = results.get(i);
-			Map<String, Object> item = new HashMap<>();
-			item.put("index", i + 1);
-			item.put("pos", Map.of("x", r.getPos().getX(), "y",
-				r.getPos().getY(), "z", r.getPos().getZ()));
-			item.put("distance", roundToOneDecimal(r.getDistance()));
-			item.put("signText",
-				r.getSignText() != null ? r.getSignText() : new String[0]);
-			item.put("fullText", String.join(" ",
-				r.getSignText() != null ? r.getSignText() : new String[0]));
-			item.put("matchedText",
-				r.getMatchedText() != null ? r.getMatchedText() : "");
-			resultList.add(item);
-		}
-		exportData.put("results", resultList);
+		Map<String, Object> exportData =
+			Map.of("searchQuery", context.searchQuery, "world",
+				context.worldName, "exportTime", context.formattedExportTime,
+				"results", createJsonResultList(results));
 		
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		String jsonOutput = gson.toJson(exportData);
 		
 		Files.writeString(filePath, jsonOutput, StandardCharsets.UTF_8);
-		
-		Objects.requireNonNull(mc.player).sendMessage(Text.translatable(
-			"signfinder.export.success", results.size(), fileName), false);
-		mc.player.sendMessage(Text.translatable(
-			"signfinder.export.file_location", filePath.toString()), false);
-		return true;
 	}
 	
 	private static double roundToOneDecimal(double value)
 	{
 		return Math.round(value * 10.0) / 10.0;
+	}
+	
+	// Helper classes and methods for optimized export structure
+	private record ExportContext(String searchQuery, String worldName,
+		String timestamp, String fileName, String formattedExportTime)
+	{}
+	
+	private ExportContext createExportContext(String searchQuery,
+		SignExportFormat format)
+	{
+		LocalDateTime exportTime = LocalDateTime.now();
+		String timestamp = exportTime.format(TIMESTAMP_FORMAT);
+		String formattedExportTime = exportTime
+			.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+		String fileName = EXPORT_FILE_PREFIX + timestamp
+			+ (format.isJsonFormat() ? ".json" : ".txt");
+		
+		MinecraftClient mc = MinecraftClient.getInstance();
+		String worldName = mc.world != null
+			? mc.world.getRegistryKey().getValue().toString() : "Unknown";
+		String query = searchQuery != null ? searchQuery : "All Signs";
+		
+		return new ExportContext(query, worldName, timestamp, fileName,
+			formattedExportTime);
+	}
+	
+	private Path createExportFile(ExportContext context) throws IOException
+	{
+		Path downloadsPath = getDownloadsPath();
+		Files.createDirectories(downloadsPath);
+		return downloadsPath.resolve(context.fileName);
+	}
+	
+	private void appendTextRow(StringBuilder sb, SignSearchResult result,
+		int index)
+	{
+		String[] signText =
+			result.getSignText() != null ? result.getSignText() : new String[0];
+		String fullText = String.join(" ", signText);
+		String matchedText =
+			result.getMatchedText() != null ? result.getMatchedText() : "";
+		
+		String[] columns = new String[11];
+		columns[0] = String.valueOf(index);
+		columns[1] = String.valueOf(result.getPos().getX());
+		columns[2] = String.valueOf(result.getPos().getY());
+		columns[3] = String.valueOf(result.getPos().getZ());
+		columns[4] =
+			String.format("%.1f", roundToOneDecimal(result.getDistance()));
+		
+		// Fill sign text columns (5-8)
+		for(int j = 0; j < 4; j++)
+		{
+			columns[5 + j] = j < signText.length ? signText[j] : "";
+		}
+		columns[9] = fullText;
+		columns[10] = matchedText;
+		
+		sb.append(String.join("\t", columns)).append("\n");
+	}
+	
+	private List<Map<String, Object>> createJsonResultList(
+		List<SignSearchResult> results)
+	{
+		List<Map<String, Object>> resultList = new ArrayList<>();
+		for(int i = 0; i < results.size(); i++)
+		{
+			resultList.add(createJsonResultItem(results.get(i), i + 1));
+		}
+		return resultList;
+	}
+	
+	private Map<String, Object> createJsonResultItem(SignSearchResult result,
+		int index)
+	{
+		String[] signText =
+			result.getSignText() != null ? result.getSignText() : new String[0];
+		
+		return Map.of("index", index, "pos",
+			Map.of("x", result.getPos().getX(), "y", result.getPos().getY(),
+				"z", result.getPos().getZ()),
+			"distance", roundToOneDecimal(result.getDistance()), "signText",
+			signText, "fullText", String.join(" ", signText), "matchedText",
+			result.getMatchedText() != null ? result.getMatchedText() : "");
+	}
+	
+	private static void sendExportSuccessMessages(MinecraftClient mc,
+		int resultCount, String fileName, Path filePath)
+	{
+		// Success message with count and filename
+		Objects.requireNonNull(mc.player).sendMessage(Text.translatable(
+			"signfinder.export.success", resultCount, fileName), false);
+		
+		// Clickable file path message
+		MutableText fileLocationMessage =
+			Text.translatable("signfinder.export.file_location_prefix")
+				.append(createClickableFilePath(filePath));
+		mc.player.sendMessage(fileLocationMessage, false);
+	}
+	
+	private static MutableText createClickableFilePath(Path filePath)
+	{
+		String pathString = filePath.toString();
+		
+		return Text.literal(pathString)
+			.styled(style -> style.withColor(Formatting.AQUA)
+				.withUnderline(true)
+				.withHoverEvent(new HoverEvent.ShowText(
+					Text.translatable("signfinder.tooltip.click_to_open_file")))
+				.withClickEvent(new ClickEvent.OpenFile(pathString)));
 	}
 }
