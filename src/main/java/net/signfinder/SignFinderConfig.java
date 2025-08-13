@@ -11,6 +11,11 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 public class SignFinderConfig implements ConfigData
 {
 	@ConfigEntry.Gui.Tooltip
+	@ConfigEntry.Gui.EnumHandler(
+		option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+	public EntitySearchRange entity_search_range = EntitySearchRange.BOTH;
+	
+	@ConfigEntry.Gui.Tooltip
 	@ConfigEntry.BoundedDiscrete(min = 1, max = 1000)
 	public int default_search_radius = 500;
 	
@@ -51,15 +56,15 @@ public class SignFinderConfig implements ConfigData
 	public boolean case_sensitive_search = false;
 	
 	@ConfigEntry.Gui.Tooltip
+	@ConfigEntry.Gui.EnumHandler(
+		option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+	public SignExportFormat export_format = SignExportFormat.TEXT;
+	
+	@ConfigEntry.Gui.Tooltip
 	public String[] ignore_words = {};
 	
 	@ConfigEntry.Gui.Tooltip
 	public String[] container_keywords = {};
-	
-	@ConfigEntry.Gui.Tooltip
-	@ConfigEntry.Gui.EnumHandler(
-		option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
-	public SignExportFormat export_format = SignExportFormat.TEXT;
 	
 	@ConfigEntry.Gui.CollapsibleObject
 	@ConfigEntry.Gui.Excluded
