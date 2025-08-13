@@ -20,22 +20,19 @@ A Minecraft Fabric mod that finds and highlights signs based on content with sea
 
 ### Commands
 ```
-/findsign <query>        # Text search
-/findsign regex <pattern># Regex search  
-/findsign array [words]  # Multi-word search
-/findsign preset <name>  # Use preset
-/findsign clear          # Clear results
-/findsign export         # Export last search result
+/findsign <query>             # Text search
+/findsign "中文查询"            # Chinese text search (use quotes for non-ASCII)
+/findsign regex <pattern>     # Regex search  
+/findsign array word1,word2   # Multi-word search (comma-separated)
+/findsign preset <name>       # Use preset
+/findsign presets            # List saved presets
+/findsign clear              # Clear results
+/findsign export <format>            # Export last search result to file (TXT/JSON)
 ```
 
 ### Configuration
+
 Access via ModMenu → SignFinder → Config
-
-## Compatibility
-
-**Requirements:** Minecraft 1.21.6-beta.3, Java 21+, Fabric Loader 0.16.14+
-
-**Incompatible:** Wurst Client, VulkanMod
 
 ## Development
 
