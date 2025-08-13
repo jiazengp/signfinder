@@ -1,10 +1,3 @@
-/*
- * Copyright (c) 2023-2025 Wurst-Imperium and contributors.
- *
- * This source code is subject to the terms of the GNU General Public
- * License, version 3. If a copy of the GPL was not distributed with this
- * file, You can obtain one at: https://www.gnu.org/licenses/gpl-3.0.txt
- */
 package net.signfinder.test;
 
 import java.io.File;
@@ -14,6 +7,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -46,6 +42,7 @@ public enum WiModsTestHelper
 {
 	;
 	
+	private static final Logger LOGGER = LoggerFactory.getLogger("TestHelper");
 	private static final AtomicInteger screenshotCounter = new AtomicInteger(0);
 	
 	/**
@@ -92,7 +89,7 @@ public enum WiModsTestHelper
 	{
 		LocalDateTime startTime = LocalDateTime.now();
 		LocalDateTime timeout = startTime.plus(maxDuration);
-		System.out.println("Waiting until " + event);
+		LOGGER.debug("Waiting until " + event);
 		
 		while(true)
 		{
@@ -101,8 +98,8 @@ public enum WiModsTestHelper
 				double seconds =
 					Duration.between(startTime, LocalDateTime.now()).toMillis()
 						/ 1000.0;
-				System.out.println(
-					"Waiting until " + event + " took " + seconds + "s");
+				LOGGER
+					.debug("Waiting until " + event + " took " + seconds + "s");
 				break;
 			}
 			
@@ -314,7 +311,7 @@ public enum WiModsTestHelper
 				if(!(drawable instanceof ClickableWidget widget))
 					continue;
 				
-				System.out.println(
+				LOGGER.debug(
 					"Found widget at " + widget.getX() + ", " + widget.getY()
 						+ " of type " + widget.getClass().getName());
 				
@@ -419,7 +416,7 @@ public enum WiModsTestHelper
 	 */
 	public static void runChatCommand(String command)
 	{
-		System.out.println("Running command: /" + command);
+		LOGGER.info("Running command: /" + command);
 		submitAndWait(mc -> {
 			ClientPlayNetworkHandler netHandler = mc.getNetworkHandler();
 			
