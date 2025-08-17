@@ -12,12 +12,22 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
-import net.signfinder.commands.CommandUtils;
+import net.signfinder.commands.core.CommandUtils;
+import net.signfinder.managers.AutoSaveManager;
 import net.signfinder.managers.ColorManager;
 import net.signfinder.managers.EntityDetectionManager;
 import net.signfinder.managers.HighlightRenderManager;
 import net.signfinder.managers.KeyBindingHandler;
 import net.signfinder.managers.SearchResultManager;
+import net.signfinder.models.EntitySearchResult;
+import net.signfinder.services.SearchService;
+import net.signfinder.services.ServiceRegistry;
+import net.signfinder.cache.LocalDataCacheManager;
+import net.signfinder.cache.SignDataCache;
+import net.signfinder.cache.PatternCache;
+import net.signfinder.detection.AutoDetectionCacheService;
+import net.signfinder.search.EntitySearchService;
+import net.signfinder.search.SearchQueryProcessor;
 
 public final class SignFinderMod
 {
@@ -33,9 +43,13 @@ public final class SignFinderMod
 	private final SearchResultManager searchResultManager;
 	private final ColorManager colorManager;
 	private final HighlightRenderManager renderManager;
+	private SearchService searchService;
+	private LocalDataCacheManager localDataManager;
+	private AutoDetectionCacheService autoDetectionCache;
 	
 	private int cacheCleanupCounter = 0;
 	private static final int CACHE_CLEANUP_INTERVAL = 6000;
+	private int autoSaveCounter = 0;
 	
 	public SignFinderMod()
 	{
@@ -45,15 +59,51 @@ public final class SignFinderMod
 			GsonConfigSerializer::new);
 		enabled = true;
 		
+		// Initialize services and register them
+		initializeServices();
+		
+		// Initialize managers using dependency injection
 		detectionManager = new EntityDetectionManager();
 		searchResultManager = new SearchResultManager(detectionManager);
 		colorManager = new ColorManager(searchResultManager);
 		renderManager = new HighlightRenderManager(colorManager);
 		
+		// Initialize other components
 		new KeyBindingHandler(configHolder, detectionManager);
 		
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher,
 			registryAccess) -> SignSearchCommand.register(dispatcher));
+		
+		LOGGER.info("SignFinder initialized with {} services",
+			ServiceRegistry.getServiceCount());
+	}
+	
+	private void initializeServices()
+	{
+		// Initialize caches
+		SignDataCache signCache = new SignDataCache();
+		PatternCache patternCache = new PatternCache();
+		SearchQueryProcessor queryProcessor =
+			new SearchQueryProcessor(patternCache);
+		
+		// Register core services
+		ServiceRegistry.registerService(SignDataCache.class, signCache);
+		ServiceRegistry.registerService(PatternCache.class, patternCache);
+		ServiceRegistry.registerService(SearchQueryProcessor.class,
+			queryProcessor);
+		
+		// Initialize and register data services
+		localDataManager =
+			new LocalDataCacheManager(AutoSaveManager.INSTANCE, queryProcessor);
+		autoDetectionCache = new AutoDetectionCacheService(localDataManager);
+		searchService = new EntitySearchService(signCache, queryProcessor,
+			localDataManager);
+		
+		ServiceRegistry.registerService(LocalDataCacheManager.class,
+			localDataManager);
+		ServiceRegistry.registerService(AutoDetectionCacheService.class,
+			autoDetectionCache);
+		ServiceRegistry.registerService(SearchService.class, searchService);
 	}
 	
 	public void onUpdate()
@@ -64,13 +114,20 @@ public final class SignFinderMod
 		SignFinderConfig config = configHolder.getConfig();
 		
 		performPeriodicCacheCleanup();
+		performPeriodicAutoSave(config);
 		
-		if(config.auto_remove_nearby)
+		if(config.auto_remove_on_approach)
 		{
 			searchResultManager.removeNearbyResults(config);
 		}
 		
 		detectionManager.performAutoDetection(config);
+		
+		// Handle auto-detection cache maintenance separately
+		autoDetectionCache.performMaintenance(config);
+		
+		// Periodic cleanup of search caches
+		searchService.performPeriodicCleanup();
 	}
 	
 	public void onRender(MatrixStack matrixStack, float partialTicks)
@@ -131,9 +188,10 @@ public final class SignFinderMod
 		searchResultManager.clearResults();
 		colorManager.clearCustomColors();
 		
-		// 清理全局缓存
-		SignSearchEngine.clearCaches();
+		searchService.clearCaches();
 		CommandUtils.clearAllCaches();
+		
+		LOGGER.info("SignFinder cleanup completed");
 	}
 	
 	private void performPeriodicCacheCleanup()
@@ -146,11 +204,40 @@ public final class SignFinderMod
 		}
 	}
 	
+	private void performPeriodicAutoSave(SignFinderConfig config)
+	{
+		if(!config.auto_save_detection_data)
+			return;
+		
+		autoSaveCounter++;
+		int autoSaveInterval = config.auto_save_interval_seconds * 20; // Convert
+																		// seconds
+																		// to
+																		// ticks
+																		// (20
+																		// ticks
+																		// per
+																		// second)
+		
+		if(autoSaveCounter >= autoSaveInterval)
+		{
+			autoSaveCounter = 0;
+			try
+			{
+				AutoSaveManager.INSTANCE.checkAndSave();
+				LOGGER.debug("Periodic auto-save completed");
+			}catch(Exception e)
+			{
+				LOGGER.warn("Error during auto-save", e);
+			}
+		}
+	}
+	
 	private void performCacheCleanup()
 	{
 		try
 		{
-			SignSearchEngine.performPeriodicCleanup();
+			searchService.performPeriodicCleanup();
 			CommandUtils.performPeriodicCleanup();
 			LOGGER.debug("Periodic cache cleanup completed");
 		}catch(Exception e)
@@ -169,6 +256,11 @@ public final class SignFinderMod
 		return configHolder;
 	}
 	
+	public SignFinderConfig getConfig()
+	{
+		return configHolder.getConfig();
+	}
+	
 	public static SignFinderMod getInstance()
 	{
 		return SignFinderModInitializer.getInstance();
@@ -183,5 +275,20 @@ public final class SignFinderMod
 	public EntityDetectionManager getDetectionManager()
 	{
 		return detectionManager;
+	}
+	
+	public SearchService getSearchService()
+	{
+		return searchService;
+	}
+	
+	public LocalDataCacheManager getLocalDataManager()
+	{
+		return localDataManager;
+	}
+	
+	public AutoDetectionCacheService getAutoDetectionCache()
+	{
+		return autoDetectionCache;
 	}
 }

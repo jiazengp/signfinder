@@ -6,8 +6,9 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import me.shedaniel.autoconfig.AutoConfig;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.signfinder.SignSearchEngine.SearchType;
-import net.signfinder.commands.*;
+import net.signfinder.services.SearchQuery.SearchType;
+import net.signfinder.commands.core.*;
+import net.signfinder.commands.specialized.*;
 
 class SignSearchCommand
 {
@@ -36,7 +37,7 @@ class SignSearchCommand
 								StringArgumentType.getString(ctx,
 									"preset_name"),
 								null)))))
-			// 正则表达式搜索
+			
 			.then(ClientCommandManager
 				.literal(CommandConstants.SUBCOMMAND_REGEX)
 				.then(ClientCommandManager
