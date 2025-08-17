@@ -10,7 +10,7 @@ import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.signfinder.EntitySearchResult;
+import net.signfinder.models.EntitySearchResult;
 import net.signfinder.SignFinderConfig;
 import net.signfinder.SignFinderMod;
 import net.signfinder.util.ChunkUtils;
@@ -38,7 +38,7 @@ public class SearchResultManager
 		if(MC.world == null)
 			return;
 		
-		// 更新ItemFrame位置索引以确保能够找到搜索结果中的ItemFrame
+		// Update ItemFrame position index to ensure search results can be found
 		detectionManager.updateItemFrameIndex();
 		Map<BlockPos, ItemFrameEntity> itemFrameIndex =
 			detectionManager.getItemFramePositionIndex();
@@ -95,7 +95,7 @@ public class SearchResultManager
 				"Item frame at {} no longer exists or was removed, skipping highlight. Index size: {}",
 				result.getPos(), itemFrameIndex.size());
 			
-			// 尝试直接查找，用于调试
+			// Try direct lookup for fallback
 			boolean foundBySearch = ChunkUtils.getLoadedEntities()
 				.anyMatch(entity -> entity instanceof ItemFrameEntity frame
 					&& frame.getBlockPos().equals(result.getPos())
@@ -115,14 +115,14 @@ public class SearchResultManager
 		{
 			SignFinderConfig config =
 				SignFinderMod.getInstance().getConfigHolder().getConfig();
-			String currentSignText = SignTextUtils.getSignText(signEntity,
-				config.case_sensitive_search);
+			String currentSignText =
+				SignTextUtils.getSignText(signEntity, config.case_sensitive);
 			
 			String matchedText = result.getMatchedText();
-			String searchText = config.case_sensitive_search ? currentSignText
+			String searchText = config.case_sensitive ? currentSignText
 				: currentSignText.toLowerCase();
-			String queryText = config.case_sensitive_search ? matchedText
-				: matchedText.toLowerCase();
+			String queryText =
+				config.case_sensitive ? matchedText : matchedText.toLowerCase();
 			
 			return searchText.contains(queryText);
 		}catch(Exception e)
@@ -143,10 +143,10 @@ public class SearchResultManager
 		
 		Vec3d playerPos = MC.player.getPos();
 		double removeDistanceSq =
-			config.auto_remove_distance * config.auto_remove_distance;
+			config.auto_removal_distance * config.auto_removal_distance;
 		boolean shouldPlaySound;
 		
-		if(config.auto_clear_other_highlights)
+		if(config.clear_all_highlights_on_approach)
 		{
 			shouldPlaySound =
 				clearAllIfPlayerNearAny(playerPos, removeDistanceSq);

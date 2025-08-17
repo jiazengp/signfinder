@@ -52,7 +52,7 @@ public enum ChunkUtils
 		ChunkPos min = new ChunkPos(center.x - radius, center.z - radius);
 		ChunkPos max = new ChunkPos(center.x + radius, center.z + radius);
 		
-		Stream<WorldChunk> stream = Stream.<ChunkPos> iterate(min, pos -> {
+		Stream<WorldChunk> stream = Stream.iterate(min, pos -> {
 			
 			int x = pos.x;
 			int z = pos.z;
@@ -70,9 +70,13 @@ public enum ChunkUtils
 			
 			return new ChunkPos(x, z);
 			
-		}).limit((long)diameter * diameter)
-			.filter(c -> MC.world.isChunkLoaded(c.x, c.z))
-			.map(c -> MC.world.getChunk(c.x, c.z)).filter(Objects::nonNull);
+		}).limit((long)diameter * diameter).filter(c -> {
+			if(MC.world != null)
+			{
+				return MC.world.isChunkLoaded(c.x, c.z);
+			}
+			return false;
+		}).map(c -> MC.world.getChunk(c.x, c.z)).filter(Objects::nonNull);
 		
 		return stream;
 	}

@@ -1,27 +1,53 @@
 package net.signfinder.managers;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.util.math.BlockPos;
 import net.signfinder.SignFinderConfig;
-import net.signfinder.util.ChunkUtils;
-import net.signfinder.util.ItemFrameUtils;
+import net.signfinder.services.EntityDetectionService;
+import net.signfinder.services.EntityValidationService;
+import net.signfinder.models.SignSearchResult;
 import net.signfinder.util.SignTextUtils;
+import net.signfinder.util.ItemFrameUtils;
+import net.minecraft.client.MinecraftClient;
 
+/**
+ * Coordinated entity detection functionality using service-oriented
+ * architecture.
+ * Manages auto-detection of signs and item frames that match configured
+ * criteria.
+ */
 public class EntityDetectionManager
 {
+	private static final Logger LOGGER =
+		LoggerFactory.getLogger(EntityDetectionManager.class);
 	
 	private final List<SignBlockEntity> highlightedSigns = new ArrayList<>();
 	private final List<ItemFrameEntity> highlightedItemFrames =
 		new ArrayList<>();
-	private final Map<BlockPos, ItemFrameEntity> itemFramePositionIndex =
-		new HashMap<>();
 	
+	private final EntityDetectionService detectionService;
+	private final EntityValidationService validationService;
+	
+	public EntityDetectionManager()
+	{
+		detectionService = new EntityDetectionService();
+		validationService = new EntityValidationService();
+		
+		LOGGER.info(
+			"EntityDetectionManager initialized with service architecture");
+	}
+	
+	/**
+	 * Perform auto-detection based on configuration settings.
+	 */
 	public void performAutoDetection(SignFinderConfig config)
 	{
 		if(!config.enable_auto_detection)
@@ -43,119 +69,151 @@ public class EntityDetectionManager
 		{
 			detectItemFrames(config);
 		}
+		
+		LOGGER.debug(
+			"Auto-detection completed: {} signs, {} item frames highlighted",
+			highlightedSigns.size(), highlightedItemFrames.size());
+	}
+	
+	/**
+	 * Update the item frame index for current loaded entities.
+	 */
+	public void updateItemFrameIndex()
+	{
+		validationService.updateItemFrameIndex();
+	}
+	
+	/**
+	 * Get the item frame position index.
+	 */
+	public Map<BlockPos, ItemFrameEntity> getItemFramePositionIndex()
+	{
+		return validationService.getAllItemFrames();
+	}
+	
+	/**
+	 * Clean up all detection data and highlighted entities.
+	 */
+	public void cleanup()
+	{
+		clearHighlighted();
+		LOGGER.debug("EntityDetectionManager cleanup completed");
+	}
+	
+	// Getters for highlighted entities
+	public List<SignBlockEntity> getHighlightedSigns()
+	{
+		return List.copyOf(highlightedSigns);
+	}
+	
+	public List<ItemFrameEntity> getHighlightedItemFrames()
+	{
+		return List.copyOf(highlightedItemFrames);
+	}
+	
+	// Getters for services (for testing and advanced usage)
+	public EntityDetectionService getDetectionService()
+	{
+		return detectionService;
+	}
+	
+	public EntityValidationService getValidationService()
+	{
+		return validationService;
 	}
 	
 	private void detectSigns(SignFinderConfig config)
 	{
-		ChunkUtils.getLoadedBlockEntities().forEach(blockEntity -> {
-			if(blockEntity instanceof SignBlockEntity signEntity)
-			{
-				if(containsContainerReference(signEntity, config)
-					&& !containsIgnoreWords(signEntity, config))
-				{
-					if(config.enable_sign_highlighting)
-					{
-						highlightedSigns.add(signEntity);
-					}
-				}
-			}
-		});
+		List<SignBlockEntity> detectedSigns =
+			detectionService.detectMatchingSigns(config);
+		
+		if(config.enable_sign_highlighting && config.auto_highlight_detected)
+		{
+			highlightedSigns.addAll(detectedSigns);
+		}
+		
+		// Auto-save detected signs if enabled
+		if(config.auto_save_detection_data)
+		{
+			saveDetectedSigns(detectedSigns, config);
+		}
 	}
 	
 	private void detectItemFrames(SignFinderConfig config)
 	{
 		updateItemFrameIndex();
-		itemFramePositionIndex.values().forEach(itemFrame -> {
-			if(containsContainerReferenceItemFrame(itemFrame, config)
-				&& !containsIgnoreWordsItemFrame(itemFrame, config))
+		List<ItemFrameEntity> detectedFrames =
+			detectionService.detectMatchingItemFrames(config);
+		
+		if(config.enable_sign_highlighting && config.auto_highlight_detected)
+		{
+			highlightedItemFrames.addAll(detectedFrames);
+		}
+		
+		// Auto-save detected item frames if enabled
+		if(config.auto_save_detection_data)
+		{
+			saveDetectedItemFrames(detectedFrames, config);
+		}
+	}
+	
+	private void saveDetectedSigns(List<SignBlockEntity> detectedSigns,
+		SignFinderConfig config)
+	{
+		MinecraftClient client = MinecraftClient.getInstance();
+		if(client.player == null)
+			return;
+		
+		for(SignBlockEntity sign : detectedSigns)
+		{
+			try
 			{
-				if(config.enable_sign_highlighting)
-				{
-					highlightedItemFrames.add(itemFrame);
-				}
-			}
-		});
-	}
-	
-	public void updateItemFrameIndex()
-	{
-		itemFramePositionIndex.clear();
-		ChunkUtils.getLoadedEntities().forEach(entity -> {
-			if(entity instanceof ItemFrameEntity itemFrame
-				&& ItemFrameUtils.hasItem(itemFrame))
+				String[] signText = SignTextUtils.getSignTextArray(sign);
+				String matchedText = String.join(" ", signText);
+				
+				SignSearchResult result =
+					new SignSearchResult(sign.getPos(), client.player.getPos(),
+						signText, matchedText, config.text_preview_length);
+				
+				AutoSaveManager.INSTANCE.addDetectedSign(result);
+			}catch(Exception e)
 			{
-				itemFramePositionIndex.put(itemFrame.getBlockPos(), itemFrame);
+				LOGGER.warn("Failed to save detected sign at {}: {}",
+					sign.getPos(), e.getMessage());
 			}
-		});
+		}
 	}
 	
-	private boolean containsContainerReference(SignBlockEntity sign,
+	private void saveDetectedItemFrames(List<ItemFrameEntity> detectedFrames,
 		SignFinderConfig config)
 	{
-		String signText =
-			SignTextUtils.getSignText(sign, config.case_sensitive_search);
-		return containsKeywords(signText, config.container_keywords,
-			config.case_sensitive_search);
+		MinecraftClient client = MinecraftClient.getInstance();
+		if(client.player == null)
+			return;
+		
+		for(ItemFrameEntity itemFrame : detectedFrames)
+		{
+			try
+			{
+				String itemName = ItemFrameUtils.getItemName(itemFrame);
+				String[] itemNameArray = {itemName};
+				
+				SignSearchResult result = new SignSearchResult(
+					itemFrame.getBlockPos(), client.player.getPos(),
+					itemNameArray, itemName, config.text_preview_length);
+				
+				AutoSaveManager.INSTANCE.addDetectedSign(result);
+			}catch(Exception e)
+			{
+				LOGGER.warn("Failed to save detected item frame at {}: {}",
+					itemFrame.getBlockPos(), e.getMessage());
+			}
+		}
 	}
 	
-	private boolean containsIgnoreWords(SignBlockEntity sign,
-		SignFinderConfig config)
-	{
-		String signText =
-			SignTextUtils.getSignText(sign, config.case_sensitive_search);
-		return containsKeywords(signText, config.ignore_words,
-			config.case_sensitive_search);
-	}
-	
-	private boolean containsContainerReferenceItemFrame(
-		ItemFrameEntity itemFrame, SignFinderConfig config)
-	{
-		String itemName = ItemFrameUtils.getItemFrameItemName(itemFrame,
-			config.case_sensitive_search);
-		return containsKeywords(itemName, config.container_keywords,
-			config.case_sensitive_search);
-	}
-	
-	private boolean containsIgnoreWordsItemFrame(ItemFrameEntity itemFrame,
-		SignFinderConfig config)
-	{
-		String itemName = ItemFrameUtils.getItemFrameItemName(itemFrame,
-			config.case_sensitive_search);
-		return containsKeywords(itemName, config.ignore_words,
-			config.case_sensitive_search);
-	}
-	
-	private boolean containsKeywords(String text, String[] keywords,
-		boolean caseSensitive)
-	{
-		return SignTextUtils.containsAnyKeyword(text, keywords, caseSensitive);
-	}
-	
-	public void clearHighlighted()
+	void clearHighlighted()
 	{
 		highlightedSigns.clear();
 		highlightedItemFrames.clear();
-	}
-	
-	public void cleanup()
-	{
-		clearHighlighted();
-		itemFramePositionIndex.clear();
-	}
-	
-	// Getters
-	public List<SignBlockEntity> getHighlightedSigns()
-	{
-		return highlightedSigns;
-	}
-	
-	public List<ItemFrameEntity> getHighlightedItemFrames()
-	{
-		return highlightedItemFrames;
-	}
-	
-	public Map<BlockPos, ItemFrameEntity> getItemFramePositionIndex()
-	{
-		return itemFramePositionIndex;
 	}
 }

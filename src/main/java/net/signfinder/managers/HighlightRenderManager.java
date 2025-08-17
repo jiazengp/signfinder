@@ -8,10 +8,11 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
-import net.signfinder.SignEspStyle;
+import net.signfinder.core.SignEspStyle;
 import net.signfinder.SignFinderConfig;
 import net.signfinder.SignFinderMod;
 import net.signfinder.util.RenderUtils;
+import net.signfinder.util.ColorUtils;
 
 public class HighlightRenderManager
 {
@@ -65,11 +66,11 @@ public class HighlightRenderManager
 	{
 		SignEspStyle style = config.highlight_style;
 		
-		// 渲染搜索结果（支持自定义颜色）
+		// Render search results (supports custom colors)
 		renderSearchResults(matrixStack, partialTicks, style, searchResultSigns,
 			searchResultItemFrames);
 		
-		// 渲染自动检测结果（使用默认颜色）
+		// Render auto-detected results (uses default colors)
 		renderAutoDetectedEntities(matrixStack, partialTicks, config, style,
 			highlightedSigns, highlightedItemFrames);
 	}
@@ -145,10 +146,21 @@ public class HighlightRenderManager
 		if(entityBoxes.isEmpty())
 			return;
 		
+		// 获取配置的透明度设置
+		SignFinderConfig config = SignFinderMod.getInstance().getConfig();
+		int configuredAlpha = config.highlight_transparency;
+		
 		if(style.hasBoxes())
 		{
-			int quadsColor = (color & 0xFFFFFF) | (0x60 << 24);
-			int linesColor = (color & 0xFFFFFF) | (0xFF << 24);
+			// 使用配置的透明度为填充颜色，但稍微降低一些以避免过于突出
+			int fillAlpha = Math.max(10, configuredAlpha * 60 / 255); // 保持相对透明
+			int quadsColor = ColorUtils.combineRgbWithAlpha(color, fillAlpha);
+			
+			// 轮廓线使用更高的不透明度以确保可见性
+			int outlineAlpha = Math.max(128, configuredAlpha); // 至少50%不透明度
+			int linesColor =
+				ColorUtils.combineRgbWithAlpha(color, outlineAlpha);
+			
 			RenderUtils.drawSolidBoxes(matrixStack, entityBoxes, quadsColor,
 				false);
 			RenderUtils.drawOutlinedBoxes(matrixStack, entityBoxes, linesColor,
@@ -159,7 +171,9 @@ public class HighlightRenderManager
 		{
 			List<Vec3d> ends =
 				entityBoxes.stream().map(Box::getCenter).toList();
-			int tracerColor = (color & 0xFFFFFF) | (0x80 << 24);
+			// 追踪线使用配置的透明度
+			int tracerColor =
+				ColorUtils.combineRgbWithAlpha(color, configuredAlpha);
 			RenderUtils.drawTracers(matrixStack, partialTicks, ends,
 				tracerColor, false);
 		}

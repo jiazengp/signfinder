@@ -24,6 +24,16 @@ public class ItemFrameUtils
 		}
 	}
 	
+	public static String getItemName(ItemFrameEntity itemFrame)
+	{
+		return getItemFrameItemName(itemFrame, false);
+	}
+	
+	public static String getItemDisplayName(ItemFrameEntity itemFrame)
+	{
+		return getItemName(itemFrame);
+	}
+	
 	public static boolean hasItem(ItemFrameEntity itemFrame)
 	{
 		if(itemFrame == null || itemFrame.isRemoved())
