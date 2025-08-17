@@ -1,4 +1,6 @@
 # SignFinder
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fjiazengp%2Fsignfinder.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fjiazengp%2Fsignfinder?ref=badge_shield)
+
 
 A Minecraft Fabric mod that finds and highlights signs based on content with search capabilities.
 
@@ -44,3 +46,5 @@ git clone https://github.com/jiazengp/signfinder.git
 ## License
 
 [GPLv3 License](LICENSE)
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fjiazengp%2Fsignfinder.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fjiazengp%2Fsignfinder?ref=badge_large)
