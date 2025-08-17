@@ -18,9 +18,9 @@ import net.minecraft.text.HoverEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.signfinder.EntitySearchResult;
-import net.signfinder.SignExportFormat;
-import net.signfinder.SignSearchResult;
+import net.signfinder.core.SignExportFormat;
+import net.signfinder.models.EntitySearchResult;
+import net.signfinder.models.SignSearchResult;
 
 public enum ExportUtils
 {
@@ -31,6 +31,10 @@ public enum ExportUtils
 	
 	private static final DateTimeFormatter TIMESTAMP_FORMAT =
 		DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
+	private static final int DEFAULT_PREVIEW_LENGTH = 20;
+	private static final double DISTANCE_PRECISION_MULTIPLIER = 10.0;
+	private static final int EXPORT_COLUMN_COUNT = 11;
+	private static final int MATCHED_TEXT_COLUMN_INDEX = 10;
 	
 	private static Path getDownloadsPath()
 	{
@@ -63,7 +67,7 @@ public enum ExportUtils
 			// For signs, use the original sign text
 			return new SignSearchResult(entityResult.getPos(),
 				MinecraftClient.getInstance().player.getPos(),
-				entityResult.getSignText(), entityResult.getMatchedText(), 20);
+				entityResult.getSignText(), entityResult.getMatchedText(), DEFAULT_PREVIEW_LENGTH);
 		}else
 		{
 			// For item frames, create minimal text array with item name only
@@ -71,7 +75,7 @@ public enum ExportUtils
 			
 			return new SignSearchResult(entityResult.getPos(),
 				MinecraftClient.getInstance().player.getPos(), itemFrameText,
-				entityResult.getMatchedText(), 20);
+				entityResult.getMatchedText(), DEFAULT_PREVIEW_LENGTH);
 		}
 	}
 	
@@ -157,7 +161,7 @@ public enum ExportUtils
 	
 	private static double roundToOneDecimal(double value)
 	{
-		return Math.round(value * 10.0) / 10.0;
+		return Math.round(value * DISTANCE_PRECISION_MULTIPLIER) / DISTANCE_PRECISION_MULTIPLIER;
 	}
 	
 	// Helper classes and methods for optimized export structure
@@ -200,7 +204,7 @@ public enum ExportUtils
 		String matchedText =
 			result.getMatchedText() != null ? result.getMatchedText() : "";
 		
-		String[] columns = new String[11];
+		String[] columns = new String[EXPORT_COLUMN_COUNT];
 		columns[0] = String.valueOf(index);
 		columns[1] = String.valueOf(result.getPos().getX());
 		columns[2] = String.valueOf(result.getPos().getY());
@@ -214,7 +218,7 @@ public enum ExportUtils
 			columns[5 + j] = j < signText.length ? signText[j] : "";
 		}
 		columns[9] = fullText;
-		columns[10] = matchedText;
+		columns[MATCHED_TEXT_COLUMN_INDEX] = matchedText;
 		
 		sb.append(String.join("\t", columns)).append("\n");
 	}
