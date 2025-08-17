@@ -6,8 +6,14 @@ import java.util.Map;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
+import net.signfinder.core.AutoSaveMode;
+import net.signfinder.core.EntitySearchRange;
+import net.signfinder.core.SignEspStyle;
+import net.signfinder.core.SignExportFormat;
 
-@Config(name = "signfinder")
+import static net.signfinder.SignFinderMod.MOD_ID;
+
+@Config(name = MOD_ID)
 public class SignFinderConfig implements ConfigData
 {
 	@ConfigEntry.Gui.Tooltip
@@ -34,18 +40,22 @@ public class SignFinderConfig implements ConfigData
 	public boolean enable_sign_highlighting = true;
 	
 	@ConfigEntry.Gui.Tooltip
-	public boolean auto_remove_nearby = true;
+	public boolean auto_remove_on_approach = true;
 	
 	@ConfigEntry.Gui.Tooltip
-	@ConfigEntry.BoundedDiscrete(min = 1, max = 10)
-	public double auto_remove_distance = 2.0;
+	@ConfigEntry.BoundedDiscrete(min = 1, max = 20)
+	public float auto_removal_distance = 2.0f;
 	
 	@ConfigEntry.Gui.Tooltip
-	public boolean auto_clear_other_highlights = true;
+	public boolean clear_all_highlights_on_approach = false;
 	
 	@ConfigEntry.Gui.Tooltip
 	@ConfigEntry.ColorPicker
 	public int sign_highlight_color = 0x00FF00;
+	
+	@ConfigEntry.Gui.Tooltip
+	@ConfigEntry.BoundedDiscrete(min = 10, max = 255)
+	public int highlight_transparency = 20;
 	
 	@ConfigEntry.Gui.Tooltip
 	@ConfigEntry.Gui.EnumHandler(
@@ -53,7 +63,25 @@ public class SignFinderConfig implements ConfigData
 	public SignEspStyle highlight_style = SignEspStyle.BOXES;
 	
 	@ConfigEntry.Gui.Tooltip
-	public boolean case_sensitive_search = false;
+	public boolean case_sensitive = false;
+	
+	@ConfigEntry.Gui.Tooltip
+	public boolean auto_highlight_detected = true;
+	
+	@ConfigEntry.Gui.Tooltip
+	public boolean auto_save_detection_data = false;
+	
+	@ConfigEntry.Gui.Tooltip
+	public boolean always_include_local_data = true;
+	
+	@ConfigEntry.Gui.Tooltip
+	@ConfigEntry.BoundedDiscrete(min = 10, max = 3600)
+	public int auto_save_interval_seconds = 500;
+	
+	@ConfigEntry.Gui.Tooltip
+	@ConfigEntry.Gui.EnumHandler(
+		option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+	public AutoSaveMode auto_save_mode = AutoSaveMode.AUTO_OVERWRITE;
 	
 	@ConfigEntry.Gui.Tooltip
 	@ConfigEntry.Gui.EnumHandler(
