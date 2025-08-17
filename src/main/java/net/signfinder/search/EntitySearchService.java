@@ -395,8 +395,6 @@ public class EntitySearchService implements SearchService
 			// If we get an error checking, be conservative and don't remove
 			// Log at debug level since this is expected in some cases
 		}
-			return false;
-		}
 		
 		return false;
 	}

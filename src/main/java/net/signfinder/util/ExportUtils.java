@@ -67,7 +67,8 @@ public enum ExportUtils
 			// For signs, use the original sign text
 			return new SignSearchResult(entityResult.getPos(),
 				MinecraftClient.getInstance().player.getPos(),
-				entityResult.getSignText(), entityResult.getMatchedText(), DEFAULT_PREVIEW_LENGTH);
+				entityResult.getSignText(), entityResult.getMatchedText(),
+				DEFAULT_PREVIEW_LENGTH);
 		}else
 		{
 			// For item frames, create minimal text array with item name only
@@ -161,7 +162,8 @@ public enum ExportUtils
 	
 	private static double roundToOneDecimal(double value)
 	{
-		return Math.round(value * DISTANCE_PRECISION_MULTIPLIER) / DISTANCE_PRECISION_MULTIPLIER;
+		return Math.round(value * DISTANCE_PRECISION_MULTIPLIER)
+			/ DISTANCE_PRECISION_MULTIPLIER;
 	}
 	
 	// Helper classes and methods for optimized export structure
