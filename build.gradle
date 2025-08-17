@@ -85,6 +85,7 @@ dependencies {
 }
 
 import net.fabricmc.loom.util.Platform
+
 tasks.register('runEndToEndTest', JavaExec) {
 	dependsOn remapJar, downloadAssets
 	classpath.from configurations.productionRuntime
