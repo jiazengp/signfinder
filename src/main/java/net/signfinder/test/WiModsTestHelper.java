@@ -33,7 +33,6 @@ import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.option.Perspective;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.tutorial.TutorialStep;
-import net.minecraft.client.util.ScreenshotRecorder;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -199,9 +198,10 @@ public enum WiModsTestHelper
 			String.format("%02d", screenshotCounter.incrementAndGet());
 		String filename = count + "_" + name + ".png";
 		File gameDir = FabricLoader.getInstance().getGameDir().toFile();
-		
-		submitAndWait(mc -> ScreenshotRecorder.saveScreenshot(gameDir, filename,
-			mc.getFramebuffer(), 1, message -> {}));
+		//
+		// submitAndWait(mc -> ScreenshotRecorder.saveScreenshot(gameDir,
+		// filename,
+		// mc.getFramebuffer(), 1, message -> {}));
 	}
 	
 	/**

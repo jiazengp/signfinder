@@ -1,40 +1,37 @@
 package net.signfinder.mixin;
 
 import org.joml.Matrix4f;
-import org.joml.Vector4f;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.llamalad7.mixinextras.sugar.Local;
 
-import net.minecraft.client.render.Camera;
+import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.client.render.WorldRenderer;
-import net.minecraft.client.util.ObjectAllocator;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.resource.SynchronousResourceReloader;
 import net.signfinder.SignFinderMod;
 
-@Mixin(WorldRenderer.class)
+@Mixin(GameRenderer.class)
 public abstract class WorldRendererMixin
-	implements SynchronousResourceReloader, AutoCloseable
 {
-	@Inject(at = @At("RETURN"),
-		method = "render(Lnet/minecraft/client/util/ObjectAllocator;Lnet/minecraft/client/render/RenderTickCounter;ZLnet/minecraft/client/render/Camera;Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;Lorg/joml/Vector4f;Z)V")
-	private void onRender(ObjectAllocator allocator,
-		RenderTickCounter tickCounter, boolean renderBlockOutline,
-		Camera camera, Matrix4f positionMatrix, Matrix4f projectionMatrix,
-		GpuBufferSlice gpuBufferSlice, Vector4f vector4f, boolean bl,
-		CallbackInfo ci)
+	@Inject(
+		at = @At(value = "FIELD",
+			target = "Lnet/minecraft/client/render/GameRenderer;renderHand:Z",
+			opcode = Opcodes.GETFIELD,
+			ordinal = 0),
+		method = "renderWorld(Lnet/minecraft/client/render/RenderTickCounter;)V")
+	private void onRenderWorldHandRendering(RenderTickCounter tickCounter,
+		CallbackInfo ci, @Local(ordinal = 2) Matrix4f matrix4f3,
+		@Local(ordinal = 1) float tickDelta)
 	{
 		MatrixStack matrixStack = new MatrixStack();
-		matrixStack.multiplyPositionMatrix(positionMatrix);
-		float tickProgress = tickCounter.getTickProgress(false);
-		
+		matrixStack.multiplyPositionMatrix(matrix4f3);
 		SignFinderMod signFinder = SignFinderMod.getInstance();
+		
 		if(signFinder != null && signFinder.isEnabled())
-			signFinder.onRender(matrixStack, tickProgress);
+			signFinder.onRender(matrixStack, tickDelta);
 	}
 }

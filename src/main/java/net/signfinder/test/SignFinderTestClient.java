@@ -92,7 +92,7 @@ public final class SignFinderTestClient implements ModInitializer
 		// Create test world with optimized settings
 		waitForScreen(CreateWorldScreen.class);
 		setTextFieldText(0,
-			"SignFinder Test " + SharedConstants.getGameVersion().name());
+			"SignFinder Test " + SharedConstants.getGameVersion().getName());
 		
 		// Set to Creative mode for testing
 		clickButton("selectWorld.gameMode");

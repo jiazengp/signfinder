@@ -7,6 +7,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.client.util.math.MatrixStack;
@@ -56,8 +57,9 @@ public abstract class GameRendererMixin implements AutoCloseable
 	 * renderWorld() method to ensure that cancelNextBobView is always reset
 	 * after the view-bobbing call.
 	 */
-	@Inject(at = @At("HEAD"), method = "renderHand(FZLorg/joml/Matrix4f;)V")
-	private void onRenderHand(float tickDelta, boolean bl, Matrix4f matrix4f,
+	@Inject(at = @At("HEAD"),
+		method = "renderHand(Lnet/minecraft/client/render/Camera;FLorg/joml/Matrix4f;)V")
+	private void onRenderHand(Camera camera, float tickDelta, Matrix4f matrix4f,
 		CallbackInfo ci)
 	{
 		cancelNextBobView = false;
