@@ -97,7 +97,8 @@ public enum RenderUtils
 		float x1, float y1, float z1, float x2, float y2, float z2, int color)
 	{
 		Vector3f normal = new Vector3f(x2, y2, z2).sub(x1, y1, z1).normalize();
-		buffer.vertex(entry, x1, y1, z1).color(color).normal(entry, normal);
+		buffer.vertex(entry, x1, y1, z1).color(color).normal(entry, normal.x,
+			normal.y, normal.z);
 		
 		// If the line goes through the screen, add another vertex there. This
 		// works around a bug in Minecraft's line shader.
@@ -106,11 +107,14 @@ public enum RenderUtils
 		if(t > 0 && t < length)
 		{
 			Vector3f closeToCam = new Vector3f(normal).mul(t).add(x1, y1, z1);
-			buffer.vertex(entry, closeToCam).color(color).normal(entry, normal);
-			buffer.vertex(entry, closeToCam).color(color).normal(entry, normal);
+			buffer.vertex(entry, closeToCam).color(color).normal(entry,
+				normal.x, normal.y, normal.z);
+			buffer.vertex(entry, closeToCam).color(color).normal(entry,
+				normal.x, normal.y, normal.z);
 		}
 		
-		buffer.vertex(entry, x2, y2, z2).color(color).normal(entry, normal);
+		buffer.vertex(entry, x2, y2, z2).color(color).normal(entry, normal.x,
+			normal.y, normal.z);
 	}
 	
 	public static void drawSolidBoxes(MatrixStack matrices, List<Box> boxes,
