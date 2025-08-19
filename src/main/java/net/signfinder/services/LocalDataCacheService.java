@@ -48,8 +48,19 @@ public class LocalDataCacheService
 	public void addDetectedSign(SignSearchResult result)
 	{
 		String worldKey = getCurrentWorldKey();
-		detectedSigns.computeIfAbsent(worldKey, k -> new ConcurrentHashMap<>())
-			.put(result.getPos(), result);
+		Map<BlockPos, SignSearchResult> worldData = detectedSigns
+			.computeIfAbsent(worldKey, k -> new ConcurrentHashMap<>());
+		
+		// Check if we already have this sign with the same content to avoid
+		// unnecessary saves
+		SignSearchResult existing = worldData.get(result.getPos());
+		if(existing != null
+			&& existing.getMatchedText().equals(result.getMatchedText()))
+		{
+			return; // No changes, skip adding
+		}
+		
+		worldData.put(result.getPos(), result);
 		hasNewData = true;
 		LOGGER.debug("Added detected sign at position: {}", result.getPos());
 	}
@@ -106,7 +117,7 @@ public class LocalDataCacheService
 		if(persistenceService.saveDetectionData(allData))
 		{
 			hasNewData = false;
-			LOGGER.info("Auto-saved {} detected signs for world: {}",
+			LOGGER.debug("Auto-saved {} detected signs for world: {}",
 				dataToSave.size(), worldKey);
 		}else
 		{

@@ -88,10 +88,10 @@ public class PresetCommand extends BaseCommand
 		
 		// 添加点击复制功能和悬停提示
 		presetText.styled(style -> style
-			.withClickEvent(
-				new ClickEvent.SuggestCommand(CommandConstants.COMMAND_PREFIX
-					+ " " + CommandConstants.SUBCOMMAND_PRESET + " " + name))
-			.withHoverEvent(new HoverEvent.ShowText(Text
+			.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND,
+				CommandConstants.COMMAND_PREFIX + " "
+					+ CommandConstants.SUBCOMMAND_PRESET + " " + name))
+			.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text
 				.translatable("signfinder.message.preset_click_hint", name))));
 		
 		return presetText;

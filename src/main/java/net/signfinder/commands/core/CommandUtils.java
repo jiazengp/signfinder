@@ -170,14 +170,13 @@ public class CommandUtils
 		MutableText text = (MutableText)formattedResult;
 		
 		text.styled(style -> style
-			.withHoverEvent(new HoverEvent.ShowText(Text
-				.translatable("signfinder.tooltip.target_coords", pos.getX(),
-					pos.getY(), pos.getZ())
-				.append("\n")
-				.append(Text.translatable("signfinder.tooltip.full_text"))
-				.append("\n" + fullText).append("\n")
-				.append(Text.translatable("signfinder.tooltip.click_to_copy"))))
-			.withClickEvent(new ClickEvent.CopyToClipboard(
+			.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+				Text.translatable("signfinder.tooltip.target_coords",
+					pos.getX(), pos.getY(), pos.getZ()).append("\n")
+					.append(Text.translatable("signfinder.tooltip.full_text"))
+					.append("\n" + fullText).append("\n").append(
+						Text.translatable("signfinder.tooltip.click_to_copy"))))
+			.withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD,
 				pos.getX() + "," + pos.getY() + "," + pos.getZ())));
 		
 		if(!isLocalData)
@@ -186,25 +185,28 @@ public class CommandUtils
 			
 			text.append(Text.translatable("signfinder.button.remove_highlight")
 				.styled(style -> style.withColor(Formatting.RED)
-					.withHoverEvent(new HoverEvent.ShowText(Text
-						.translatable("signfinder.tooltip.remove_highlight")))
-					.withClickEvent(new ClickEvent.RunCommand(
-						CommandConstants.COMMAND_PREFIX + " "
-							+ CommandConstants.SUBCOMMAND_REMOVE + " "
-							+ pos.getX() + " " + pos.getY() + " "
-							+ pos.getZ()))));
+					.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+						Text.translatable(
+							"signfinder.tooltip.remove_highlight")))
+					.withClickEvent(
+						new ClickEvent(ClickEvent.Action.RUN_COMMAND,
+							CommandConstants.COMMAND_PREFIX + " "
+								+ CommandConstants.SUBCOMMAND_REMOVE + " "
+								+ pos.getX() + " " + pos.getY() + " "
+								+ pos.getZ()))));
 			
 			text.append(" ");
 			
 			text.append(Text.translatable("signfinder.button.mark")
 				.styled(style -> style.withColor(Formatting.GREEN)
-					.withHoverEvent(new HoverEvent.ShowText(
+					.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
 						Text.translatable("signfinder.tooltip.change_color")))
-					.withClickEvent(new ClickEvent.RunCommand(
-						CommandConstants.COMMAND_PREFIX + " "
-							+ CommandConstants.SUBCOMMAND_COLOR + " "
-							+ pos.getX() + " " + pos.getY() + " "
-							+ pos.getZ()))));
+					.withClickEvent(
+						new ClickEvent(ClickEvent.Action.RUN_COMMAND,
+							CommandConstants.COMMAND_PREFIX + " "
+								+ CommandConstants.SUBCOMMAND_COLOR + " "
+								+ pos.getX() + " " + pos.getY() + " "
+								+ pos.getZ()))));
 		}
 		
 		return text;
@@ -217,10 +219,10 @@ public class CommandUtils
 		
 		if(currentPage > 1)
 		{
-			pageControl
-				.append(Text.translatable("signfinder.button.previous_page")
-					.styled(style -> style.withColor(Formatting.GREEN)
-						.withClickEvent(new ClickEvent.RunCommand(
+			pageControl.append(
+				Text.translatable("signfinder.button.previous_page").styled(
+					style -> style.withColor(Formatting.GREEN).withClickEvent(
+						new ClickEvent(ClickEvent.Action.RUN_COMMAND,
 							CommandConstants.COMMAND_PREFIX + " "
 								+ CommandConstants.SUBCOMMAND_PAGE + " "
 								+ (currentPage - 1)))));
@@ -228,12 +230,13 @@ public class CommandUtils
 		
 		if(currentPage < totalPages)
 		{
-			pageControl.append(Text.translatable("signfinder.button.next_page")
-				.styled(style -> style.withColor(Formatting.GREEN)
-					.withClickEvent(new ClickEvent.RunCommand(
-						CommandConstants.COMMAND_PREFIX + " "
-							+ CommandConstants.SUBCOMMAND_PAGE + " "
-							+ (currentPage + 1)))));
+			pageControl
+				.append(Text.translatable("signfinder.button.next_page").styled(
+					style -> style.withColor(Formatting.GREEN).withClickEvent(
+						new ClickEvent(ClickEvent.Action.RUN_COMMAND,
+							CommandConstants.COMMAND_PREFIX + " "
+								+ CommandConstants.SUBCOMMAND_PAGE + " "
+								+ (currentPage + 1)))));
 		}
 		
 		// Add clickable page numbers
@@ -306,13 +309,13 @@ public class CommandUtils
 	private static MutableText createClickablePageNumber(int page,
 		int currentPage)
 	{
-		return Text.literal(String.valueOf(page)).styled(style -> style
-			.withColor(Formatting.AQUA)
-			.withHoverEvent(new HoverEvent.ShowText(
-				Text.translatable("signfinder.tooltip.goto_page", page)))
-			.withClickEvent(
-				new ClickEvent.RunCommand(CommandConstants.COMMAND_PREFIX + " "
-					+ CommandConstants.SUBCOMMAND_PAGE + " " + page)));
+		return Text.literal(String.valueOf(page))
+			.styled(style -> style.withColor(Formatting.AQUA)
+				.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+					Text.translatable("signfinder.tooltip.goto_page", page)))
+				.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
+					CommandConstants.COMMAND_PREFIX + " "
+						+ CommandConstants.SUBCOMMAND_PAGE + " " + page)));
 	}
 	
 	private static int[] calculatePageRange(int currentPage, int totalPages)
@@ -364,11 +367,11 @@ public class CommandUtils
 			.translatable("signfinder.button.export",
 				Text.translatable(signExportFormat.toString()))
 			.styled(style -> style.withColor(Formatting.BLUE)
-				.withHoverEvent(new HoverEvent.ShowText(
+				.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
 					Text.translatable("signfinder.tooltip.export")))
-				.withClickEvent(
-					new ClickEvent.RunCommand(CommandConstants.COMMAND_PREFIX
-						+ " " + CommandConstants.SUBCOMMAND_EXPORT + " "
+				.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
+					CommandConstants.COMMAND_PREFIX + " "
+						+ CommandConstants.SUBCOMMAND_EXPORT + " "
 						+ signExportFormat.name())));
 	}
 }

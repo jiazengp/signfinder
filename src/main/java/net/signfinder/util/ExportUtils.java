@@ -271,8 +271,9 @@ public enum ExportUtils
 		return Text.literal(pathString)
 			.styled(style -> style.withColor(Formatting.AQUA)
 				.withUnderline(true)
-				.withHoverEvent(new HoverEvent.ShowText(
+				.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
 					Text.translatable("signfinder.tooltip.click_to_open_file")))
-				.withClickEvent(new ClickEvent.OpenFile(pathString)));
+				.withClickEvent(
+					new ClickEvent(ClickEvent.Action.OPEN_FILE, pathString)));
 	}
 }

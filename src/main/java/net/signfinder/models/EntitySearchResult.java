@@ -2,6 +2,7 @@ package net.signfinder.models;
 
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.entity.decoration.ItemFrameEntity;
+import net.minecraft.text.HoverEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
@@ -270,7 +271,7 @@ public class EntitySearchResult
 				.styled(style -> style
 					.withColor(net.minecraft.util.Formatting.DARK_GRAY)
 					.withItalic(true)
-					.withHoverEvent(new net.minecraft.text.HoverEvent.ShowText(
+					.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
 						createLocalDataTooltip())));
 			
 			result.append(localTag);
