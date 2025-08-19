@@ -127,8 +127,10 @@ public class AutoDetectionCacheService
 		
 		try
 		{
-			// Auto-save functionality moved to dedicated periodic auto-save in SignFinderMod
-			// No longer perform automatic saves here to avoid excessive save frequency
+			// Auto-save functionality moved to dedicated periodic auto-save in
+			// SignFinderMod
+			// No longer perform automatic saves here to avoid excessive save
+			// frequency
 			LOGGER.debug("Auto-detection cache maintenance completed");
 		}catch(Exception e)
 		{

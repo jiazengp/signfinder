@@ -48,11 +48,14 @@ public class LocalDataCacheService
 	public void addDetectedSign(SignSearchResult result)
 	{
 		String worldKey = getCurrentWorldKey();
-		Map<BlockPos, SignSearchResult> worldData = detectedSigns.computeIfAbsent(worldKey, k -> new ConcurrentHashMap<>());
+		Map<BlockPos, SignSearchResult> worldData = detectedSigns
+			.computeIfAbsent(worldKey, k -> new ConcurrentHashMap<>());
 		
-		// Check if we already have this sign with the same content to avoid unnecessary saves
+		// Check if we already have this sign with the same content to avoid
+		// unnecessary saves
 		SignSearchResult existing = worldData.get(result.getPos());
-		if(existing != null && existing.getMatchedText().equals(result.getMatchedText()))
+		if(existing != null
+			&& existing.getMatchedText().equals(result.getMatchedText()))
 		{
 			return; // No changes, skip adding
 		}
