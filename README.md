@@ -2,32 +2,31 @@
 
 A Minecraft Fabric mod that finds and highlights signs based on content with search capabilities.
 
+This mod is designed to help players locate signs or item frames containing specific content in large multiplayer server markets, making it easy to find what they are looking for even when numerous stalls are present.
+
 ## Features
 
 - Smart sign detection with configurable keywords
-- Text, regex, and array search with presets
+- Text, regex, and array searches with presets
 - ESP-style highlighting with customizable colors
-- Pagination and distance sorting
+- Pagination and distance-based sorting
 - Auto-removal when approaching signs
-
-## Installation
-
-1. Install [Fabric Loader](https://fabricmc.net/use/)
-2. Download from [Modrinth](https://modrinth.com/mods/signfinder)
-3. Place in `mods` folder
+- Automatic local saving of search results
+- Multilingual support: Chinese and English
 
 ## Usage
 
 ### Commands
+
 ```
-/findsign <query>             # Text search
-/findsign "中文查询"            # Chinese text search (use quotes for non-ASCII)
-/findsign regex <pattern>     # Regex search  
-/findsign array word1,word2   # Multi-word search (comma-separated)
-/findsign preset <name>       # Use preset
-/findsign presets            # List saved presets
-/findsign clear              # Clear results
-/findsign export <format>            # Export last search result to file (TXT/JSON)
+/findsign <query>                        # Text search
+/findsign "中文搜索需要括起来"            # Enclose non-ASCII characters or text with spaces/special symbols in quotes "
+/findsign regex <pattern>                # Regex search  
+/findsign array word1,word2              # Multi-word search (comma-separated)
+/findsign preset <preset name>           # Use preset
+/findsign presets                        # List saved presets
+/findsign clear                          # Clear results
+/findsign export <format (TXT/JSON)>     # Export last search result to file 
 ```
 
 ### Configuration
@@ -40,6 +39,17 @@ Access via ModMenu → SignFinder → Config
 git clone https://github.com/jiazengp/signfinder.git
 ./gradlew build
 ```
+
+## Compatibility
+
+### Known incompatibility:
+
+- [Vulkan](https://modrinth.com/mod/vulkanmod)
+
+### About v1.20.x or lower
+
+This mod will not temporarily support Minecraft versions below 1.21.
+If you are on 1.20, consider using [sign-searcher-updated](https://modrinth.com/mod/sign-searcher-updated).
 
 ## License
 
