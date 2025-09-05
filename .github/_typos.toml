@@ -32,12 +32,5 @@ extend-exclude = [
     "*.yaml"
 ]
 
-[type]
-[type.markdown]
-extend-ignore = ["RU"]
-
-[type.text]
-extend-ignore = ["RU"]
-
 [type.rust]
 extend-ignore = ["RU"]
