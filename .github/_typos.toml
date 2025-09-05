@@ -1,8 +1,8 @@
 [default]
-extend-ignore = ["RU"]
+extend-exclude = ["RU"]
 
 [files]
-ignore = [
+extend-exclude = [
     "**/target/**",
     "**/build/**",
     "**/node_modules/**",
