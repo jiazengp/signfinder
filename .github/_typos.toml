@@ -33,4 +33,4 @@ extend-exclude = [
 ]
 
 [type.rust]
-extend-ignore = ["RU"]
+extend-exclude = ["RU"]
