@@ -27,7 +27,7 @@ ignore = [
     "**/bin/**",
     "assets/**",
     "*.toml",
-    "*.json",
+    "src/main/resources/assets/**/lang/*.json",
     "*.yml",
     "*.yaml"
 ]
