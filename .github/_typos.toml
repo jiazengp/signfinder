@@ -1,0 +1,43 @@
+[default]
+extend-ignore = ["RU"]
+
+[files]
+ignore = [
+    "**/target/**",
+    "**/build/**",
+    "**/node_modules/**",
+    "**/.git/**",
+    "**/*.lock",
+    "**/*.bin",
+    "**/*.data",
+    "**/*.jar",
+    "**/*.class",
+    "**/*.png",
+    "**/*.jpg",
+    "**/*.gif",
+    "**/*.ico",
+    "**/*.woff",
+    "**/*.woff2",
+    "**/*.ttf",
+    "**/*.eot",
+    "**/gradle/**",
+    "**/.gradle/**",
+    "**/out/**",
+    "**/dist/**",
+    "**/bin/**",
+    "assets/**",
+    "*.toml",
+    "*.json",
+    "*.yml",
+    "*.yaml"
+]
+
+[type]
+[type.markdown]
+extend-ignore = ["RU"]
+
+[type.text]
+extend-ignore = ["RU"]
+
+[type.rust]
+extend-ignore = ["RU"]
