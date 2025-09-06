@@ -31,6 +31,3 @@ extend-exclude = [
     "*.yml",
     "*.yaml"
 ]
-
-[type.rust]
-extend-exclude = ["RU"]
