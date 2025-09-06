@@ -1,0 +1,33 @@
+[default]
+extend-exclude = ["RU"]
+
+[files]
+extend-exclude = [
+    "**/target/**",
+    "**/build/**",
+    "**/node_modules/**",
+    "**/.git/**",
+    "**/*.lock",
+    "**/*.bin",
+    "**/*.data",
+    "**/*.jar",
+    "**/*.class",
+    "**/*.png",
+    "**/*.jpg",
+    "**/*.gif",
+    "**/*.ico",
+    "**/*.woff",
+    "**/*.woff2",
+    "**/*.ttf",
+    "**/*.eot",
+    "**/gradle/**",
+    "**/.gradle/**",
+    "**/out/**",
+    "**/dist/**",
+    "**/bin/**",
+    "assets/**",
+    "*.toml",
+    "src/main/resources/assets/**/lang/*.json",
+    "*.yml",
+    "*.yaml"
+]
