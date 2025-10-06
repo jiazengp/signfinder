@@ -54,7 +54,7 @@ public class EntitySearchService implements SearchService
 			return List.of();
 		}
 		
-		Vec3d playerPos = mc.player.getPos();
+		Vec3d playerPos = mc.player.getEntityPos();
 		Map<BlockPos, EntitySearchResult> liveResultMap = new HashMap<>();
 		
 		// Search loaded entities first
@@ -195,7 +195,7 @@ public class EntitySearchService implements SearchService
 			if(entity instanceof ItemFrameEntity itemFrame
 				&& ItemFrameUtils.hasItem(itemFrame))
 			{
-				Vec3d framePos = itemFrame.getPos();
+				Vec3d framePos = itemFrame.getEntityPos();
 				if(center.squaredDistanceTo(framePos) <= radiusSq)
 				{
 					itemFrames.add(itemFrame);
@@ -412,7 +412,7 @@ public class EntitySearchService implements SearchService
 			if(mc.player != null)
 			{
 				updatedResult = new SignSearchResult(liveResult.getPos(),
-					mc.player.getPos(), liveResult.getDisplayText(),
+					mc.player.getEntityPos(), liveResult.getDisplayText(),
 					liveResult.getMatchedText(), config.text_preview_length);
 			}
 			

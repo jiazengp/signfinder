@@ -55,7 +55,7 @@ public class ExportCommand extends BaseCommand
 		// No search results exist, export according to config settings
 		if(mc.player == null)
 			return 0;
-		Vec3d playerPos = mc.player.getPos();
+		Vec3d playerPos = mc.player.getEntityPos();
 		int defaultRadius = config.default_search_radius;
 		
 		// Generate dynamic message based on search range

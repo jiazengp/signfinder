@@ -65,19 +65,27 @@ public enum ExportUtils
 		if(entityResult.getEntityType() == EntitySearchResult.EntityType.SIGN)
 		{
 			// For signs, use the original sign text
-			return new SignSearchResult(entityResult.getPos(),
-				MinecraftClient.getInstance().player.getPos(),
-				entityResult.getSignText(), entityResult.getMatchedText(),
-				DEFAULT_PREVIEW_LENGTH);
+			if(MinecraftClient.getInstance().player != null)
+			{
+				return new SignSearchResult(entityResult.getPos(),
+					MinecraftClient.getInstance().player.getEntityPos(),
+					entityResult.getSignText(), entityResult.getMatchedText(),
+					DEFAULT_PREVIEW_LENGTH);
+			}
 		}else
 		{
 			// For item frames, create minimal text array with item name only
 			String[] itemFrameText = {entityResult.getItemName(), "", "", ""};
 			
-			return new SignSearchResult(entityResult.getPos(),
-				MinecraftClient.getInstance().player.getPos(), itemFrameText,
-				entityResult.getMatchedText(), DEFAULT_PREVIEW_LENGTH);
+			if(MinecraftClient.getInstance().player != null)
+			{
+				return new SignSearchResult(entityResult.getPos(),
+					MinecraftClient.getInstance().player.getEntityPos(),
+					itemFrameText, entityResult.getMatchedText(),
+					DEFAULT_PREVIEW_LENGTH);
+			}
 		}
+		return null;
 	}
 	
 	public boolean exportSignSearchResult(List<SignSearchResult> results,

@@ -276,7 +276,7 @@ public class LocalDataCacheService
 				return;
 			
 			SignSearchResult updatedResult = new SignSearchResult(pos,
-				client.player.getPos(), currentText,
+				client.player.getEntityPos(), currentText,
 				String.join(" ", currentText),
 				SignFinderMod.getInstance().getConfig().text_preview_length);
 			
@@ -310,7 +310,8 @@ public class LocalDataCacheService
 		MinecraftClient client = MinecraftClient.getInstance();
 		
 		return new SignSearchResult(pos,
-			client.player != null ? client.player.getPos() : pos.toCenterPos(),
+			client.player != null ? client.player.getEntityPos()
+				: pos.toCenterPos(),
 			data.signText, data.matchedText,
 			SignFinderMod.getInstance().getConfig().text_preview_length);
 	}

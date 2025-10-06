@@ -171,9 +171,9 @@ public class EntityDetectionManager
 				String[] signText = SignTextUtils.getSignTextArray(sign);
 				String matchedText = String.join(" ", signText);
 				
-				SignSearchResult result =
-					new SignSearchResult(sign.getPos(), client.player.getPos(),
-						signText, matchedText, config.text_preview_length);
+				SignSearchResult result = new SignSearchResult(sign.getPos(),
+					client.player.getEntityPos(), signText, matchedText,
+					config.text_preview_length);
 				
 				AutoSaveManager.INSTANCE.addDetectedSign(result);
 			}catch(Exception e)
@@ -199,7 +199,7 @@ public class EntityDetectionManager
 				String[] itemNameArray = {itemName};
 				
 				SignSearchResult result = new SignSearchResult(
-					itemFrame.getBlockPos(), client.player.getPos(),
+					itemFrame.getBlockPos(), client.player.getEntityPos(),
 					itemNameArray, itemName, config.text_preview_length);
 				
 				AutoSaveManager.INSTANCE.addDetectedSign(result);

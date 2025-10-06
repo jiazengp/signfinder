@@ -7,7 +7,9 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.signfinder.SignFinderConfig;
+import net.signfinder.SignFinderMod;
 
 public class KeyBindingHandler
 {
@@ -17,6 +19,8 @@ public class KeyBindingHandler
 	private final KeyBinding toggleHighlightingKey;
 	private final ConfigHolder<SignFinderConfig> configHolder;
 	private final EntityDetectionManager detectionManager;
+	private static final KeyBinding.Category CATEGORY =
+		KeyBinding.Category.create(Identifier.of(SignFinderMod.MOD_ID, "main"));
 	
 	public KeyBindingHandler(ConfigHolder<SignFinderConfig> configHolder,
 		EntityDetectionManager detectionManager)
@@ -26,11 +30,11 @@ public class KeyBindingHandler
 		
 		toggleAutoDetectionKey = KeyBindingHelper.registerKeyBinding(
 			new KeyBinding("key.signfinder.toggle_auto_detection",
-				InputUtil.UNKNOWN_KEY.getCode(), "key.category.signfinder"));
+				InputUtil.UNKNOWN_KEY.getCode(), CATEGORY));
 		
 		toggleHighlightingKey = KeyBindingHelper.registerKeyBinding(
 			new KeyBinding("key.signfinder.toggle_highlighting",
-				InputUtil.UNKNOWN_KEY.getCode(), "key.category.signfinder"));
+				InputUtil.UNKNOWN_KEY.getCode(), CATEGORY));
 		
 		registerEventHandlers();
 	}

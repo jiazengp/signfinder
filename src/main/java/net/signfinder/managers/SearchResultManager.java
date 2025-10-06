@@ -141,7 +141,7 @@ public class SearchResultManager
 		if(searchResultSigns.isEmpty() && searchResultItemFrames.isEmpty())
 			return;
 		
-		Vec3d playerPos = MC.player.getPos();
+		Vec3d playerPos = MC.player.getEntityPos();
 		double removeDistanceSq =
 			config.auto_removal_distance * config.auto_removal_distance;
 		boolean shouldPlaySound;
@@ -172,7 +172,7 @@ public class SearchResultManager
 				double distanceSq = playerPos.squaredDistanceTo(signPos);
 				return distanceSq <= removeDistanceSq;
 			}) || searchResultItemFrames.stream().anyMatch(itemFrame -> {
-				Vec3d itemFramePos = itemFrame.getPos();
+				Vec3d itemFramePos = itemFrame.getEntityPos();
 				double distanceSq = playerPos.squaredDistanceTo(itemFramePos);
 				return distanceSq <= removeDistanceSq;
 			});
@@ -200,7 +200,7 @@ public class SearchResultManager
 		});
 		
 		searchResultItemFrames.removeIf(itemFrame -> {
-			Vec3d itemFramePos = itemFrame.getPos();
+			Vec3d itemFramePos = itemFrame.getEntityPos();
 			double distanceSq = playerPos.squaredDistanceTo(itemFramePos);
 			return distanceSq <= removeDistanceSq;
 		});
