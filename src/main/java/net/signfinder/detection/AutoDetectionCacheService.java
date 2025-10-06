@@ -94,7 +94,7 @@ public class AutoDetectionCacheService
 			return;
 		}
 		
-		Vec3d playerPos = mc.player.getPos();
+		Vec3d playerPos = mc.player.getEntityPos();
 		double removalDistanceSq =
 			config.auto_removal_distance * config.auto_removal_distance;
 		

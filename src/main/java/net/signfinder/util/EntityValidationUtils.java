@@ -37,7 +37,7 @@ public enum EntityValidationUtils
 		
 		SignFinderConfig config = SignFinderMod.getInstance().getConfig();
 		double distance =
-			Math.sqrt(pos.getSquaredDistance(client.player.getPos()));
+			Math.sqrt(pos.getSquaredDistance(client.player.getEntityPos()));
 		boolean inRange = distance <= config.default_search_radius;
 		
 		try
@@ -87,7 +87,7 @@ public enum EntityValidationUtils
 			{
 				// Text has changed, create updated result
 				SignSearchResult updatedResult = new SignSearchResult(pos,
-					client.player.getPos(), currentText,
+					client.player.getEntityPos(), currentText,
 					String.join(" ", currentText), config.text_preview_length);
 				LOGGER.debug("Sign text changed at position: {}", pos);
 				return new ValidationResult(ValidationStatus.MODIFIED,
