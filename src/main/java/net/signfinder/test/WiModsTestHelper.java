@@ -285,14 +285,14 @@ public enum WiModsTestHelper
 		if(widget instanceof ButtonWidget button
 			&& buttonText.equals(button.getMessage().getString()))
 		{
-			button.onPress();
+			button.onPress(null);
 			return true;
 		}
 		
 		if(widget instanceof CyclingButtonWidget<?> button
 			&& buttonText.equals(button.optionText.getString()))
 		{
-			button.onPress();
+			button.onPress(null);
 			return true;
 		}
 		
@@ -329,7 +329,7 @@ public enum WiModsTestHelper
 		if(widget instanceof PressableWidget button && button.getX() == x
 			&& button.getY() == y)
 		{
-			button.onPress();
+			button.onPress(null);
 			return true;
 		}
 		
@@ -366,12 +366,6 @@ public enum WiModsTestHelper
 		});
 	}
 	
-	public static void setKeyPressState(int key, boolean pressed)
-	{
-		submitAndWait(mc -> mc.keyboard.onKey(mc.getWindow().getHandle(), key,
-			0, pressed ? 1 : 0, 0));
-	}
-	
 	public static void closeScreen()
 	{
 		submitAndWait(mc -> mc.setScreen(null));
@@ -385,11 +379,6 @@ public enum WiModsTestHelper
 	public static void openInventory()
 	{
 		submitAndWait(mc -> mc.setScreen(new InventoryScreen(mc.player)));
-	}
-	
-	public static void toggleDebugHud()
-	{
-		submitAndWait(mc -> mc.inGameHud.getDebugHud().toggleDebugHud());
 	}
 	
 	public static void setPerspective(Perspective perspective)
