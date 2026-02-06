@@ -17,8 +17,9 @@ public abstract class BaseCommand
 	{
 		if(MC.player == null || MC.level == null)
 		{
-			ctx.getSource()
-				.sendFeedback(Component.translatable("signfinder.error.not_in_world").withStyle(ChatFormatting.RED));
+			ctx.getSource().sendFeedback(
+				Component.translatable("signfinder.error.not_in_world")
+					.withStyle(ChatFormatting.RED));
 			return false;
 		}
 		return true;

@@ -10,7 +10,7 @@ public final class SignFinderModMenuApi implements ModMenuApi
 	@Override
 	public ConfigScreenFactory<?> getModConfigScreenFactory()
 	{
-        return parent -> AutoConfigClient
-                .getConfigScreen(SignFinderConfig.class, parent).get();
+		return parent -> AutoConfigClient
+			.getConfigScreen(SignFinderConfig.class, parent).get();
 	}
 }

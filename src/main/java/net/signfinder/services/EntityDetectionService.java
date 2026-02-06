@@ -56,24 +56,24 @@ public class EntityDetectionService
 	 *            Configuration containing detection keywords and settings
 	 * @return List of detected item frame entities
 	 */
-	public List<ItemFrame> detectMatchingItemFrames(
-		SignFinderConfig config)
+	public List<ItemFrame> detectMatchingItemFrames(SignFinderConfig config)
 	{
 		List<ItemFrame> detectedFrames = new ArrayList<>();
-
-        ChunkUtils.getLoadedEntities().forEach(entity -> {
-            if (entity instanceof ItemFrame itemFrame
-                    && ItemFrameUtils.hasItem(itemFrame)) {
-
-                if (containsContainerReferenceItemFrame(itemFrame, config)
-                        && !containsIgnoreWordsItemFrame(itemFrame, config)) {
-                    detectedFrames.add(itemFrame);
-                }
-            }
-        });
-
-
-        LOGGER.debug("Detected {} matching item frames", detectedFrames.size());
+		
+		ChunkUtils.getLoadedEntities().forEach(entity -> {
+			if(entity instanceof ItemFrame itemFrame
+				&& ItemFrameUtils.hasItem(itemFrame))
+			{
+				
+				if(containsContainerReferenceItemFrame(itemFrame, config)
+					&& !containsIgnoreWordsItemFrame(itemFrame, config))
+				{
+					detectedFrames.add(itemFrame);
+				}
+			}
+		});
+		
+		LOGGER.debug("Detected {} matching item frames", detectedFrames.size());
 		return detectedFrames;
 	}
 	
@@ -100,8 +100,8 @@ public class EntityDetectionService
 			
 			if(matches)
 			{
-				LOGGER.debug("Sign at {} matches keyword '{}'", sign.getBlockPos(),
-					keyword);
+				LOGGER.debug("Sign at {} matches keyword '{}'",
+					sign.getBlockPos(), keyword);
 				return true;
 			}
 		}
@@ -141,8 +141,8 @@ public class EntityDetectionService
 		return false;
 	}
 	
-	private boolean containsContainerReferenceItemFrame(
-		ItemFrame itemFrame, SignFinderConfig config)
+	private boolean containsContainerReferenceItemFrame(ItemFrame itemFrame,
+		SignFinderConfig config)
 	{
 		if(config.container_keywords == null
 			|| config.container_keywords.length == 0)

@@ -155,8 +155,7 @@ public class EntityValidationService
 		}
 		
 		// Validate cached item frames
-		for(Map.Entry<BlockPos, ItemFrame> entry : cachedItemFrames
-			.entrySet())
+		for(Map.Entry<BlockPos, ItemFrame> entry : cachedItemFrames.entrySet())
 		{
 			BlockPos pos = entry.getKey();
 			ItemFrame itemFrame = entry.getValue();

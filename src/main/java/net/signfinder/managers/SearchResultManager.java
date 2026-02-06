@@ -23,8 +23,7 @@ public class SearchResultManager
 	private static final Minecraft MC = Minecraft.getInstance();
 	
 	private final List<SignBlockEntity> searchResultSigns = new ArrayList<>();
-	private final List<ItemFrame> searchResultItemFrames =
-		new ArrayList<>();
+	private final List<ItemFrame> searchResultItemFrames = new ArrayList<>();
 	private final EntityDetectionManager detectionManager;
 	
 	public SearchResultManager(EntityDetectionManager detectionManager)
@@ -95,19 +94,20 @@ public class SearchResultManager
 			SignFinderMod.LOGGER.debug(
 				"Item frame at {} no longer exists or was removed, skipping highlight. Index size: {}",
 				result.getPos(), itemFrameIndex.size());
-            boolean foundBySearch = false;
-
-            // Try direct lookup for fallback
-            for (Entity entity : ChunkUtils.getLoadedEntities()) {
-                if(entity instanceof ItemFrame frame
-                        && frame.blockPosition().equals(result.getPos())
-                        && ItemFrameUtils.hasItem(frame)
-                ) {
-                    foundBySearch = true;
-                }
-            }
-
-            if(foundBySearch)
+			boolean foundBySearch = false;
+			
+			// Try direct lookup for fallback
+			for(Entity entity : ChunkUtils.getLoadedEntities())
+			{
+				if(entity instanceof ItemFrame frame
+					&& frame.blockPosition().equals(result.getPos())
+					&& ItemFrameUtils.hasItem(frame))
+				{
+					foundBySearch = true;
+				}
+			}
+			
+			if(foundBySearch)
 			{
 				SignFinderMod.LOGGER.warn(
 					"Item frame exists but not in index - possible timing issue");
@@ -165,8 +165,8 @@ public class SearchResultManager
 		
 		if(shouldPlaySound && MC.player != null)
 		{
-			MC.player.playSound(SoundEvents.NOTE_BLOCK_CHIME.value(),
-				0.5f, 2.0f);
+			MC.player.playSound(SoundEvents.NOTE_BLOCK_CHIME.value(), 0.5f,
+				2.0f);
 		}
 	}
 	
@@ -227,8 +227,8 @@ public class SearchResultManager
 	public boolean removeResultByPos(int x, int y, int z)
 	{
 		BlockPos targetPos = new BlockPos(x, y, z);
-		boolean signRemoved =
-			searchResultSigns.removeIf(sign -> sign.getBlockPos().equals(targetPos));
+		boolean signRemoved = searchResultSigns
+			.removeIf(sign -> sign.getBlockPos().equals(targetPos));
 		boolean itemFrameRemoved = searchResultItemFrames
 			.removeIf(itemFrame -> itemFrame.getPos().equals(targetPos));
 		return signRemoved || itemFrameRemoved;

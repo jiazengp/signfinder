@@ -30,8 +30,7 @@ public class EntityDetectionManager
 		LoggerFactory.getLogger(EntityDetectionManager.class);
 	
 	private final List<SignBlockEntity> highlightedSigns = new ArrayList<>();
-	private final List<ItemFrame> highlightedItemFrames =
-		new ArrayList<>();
+	private final List<ItemFrame> highlightedItemFrames = new ArrayList<>();
 	
 	private final EntityDetectionService detectionService;
 	private final EntityValidationService validationService;
@@ -171,9 +170,9 @@ public class EntityDetectionManager
 				String[] signText = SignTextUtils.getSignTextArray(sign);
 				String matchedText = String.join(" ", signText);
 				
-				SignSearchResult result = new SignSearchResult(sign.getBlockPos(),
-					client.player.position(), signText, matchedText,
-					config.text_preview_length);
+				SignSearchResult result = new SignSearchResult(
+					sign.getBlockPos(), client.player.position(), signText,
+					matchedText, config.text_preview_length);
 				
 				AutoSaveManager.INSTANCE.addDetectedSign(result);
 			}catch(Exception e)
@@ -199,8 +198,8 @@ public class EntityDetectionManager
 				String[] itemNameArray = {itemName};
 				
 				SignSearchResult result = new SignSearchResult(
-					itemFrame.getPos(), client.player.position(),
-					itemNameArray, itemName, config.text_preview_length);
+					itemFrame.getPos(), client.player.position(), itemNameArray,
+					itemName, config.text_preview_length);
 				
 				AutoSaveManager.INSTANCE.addDetectedSign(result);
 			}catch(Exception e)

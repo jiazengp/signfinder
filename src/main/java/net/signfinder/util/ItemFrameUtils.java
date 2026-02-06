@@ -1,6 +1,5 @@
 package net.signfinder.util;
 
-
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.item.ItemStack;
@@ -17,9 +16,10 @@ public class ItemFrameUtils
 		
 		try
 		{
-			Component itemName = itemFrame.getItem().getDisplayName();;
+			Component itemName = itemFrame.getItem().getDisplayName();
+			;
 			String name = itemName.getString();
-            LOGGER.info(name);
+			LOGGER.info(name);
 			return caseSensitive ? name : name.toLowerCase();
 		}catch(Exception e)
 		{

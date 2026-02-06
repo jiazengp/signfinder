@@ -49,7 +49,7 @@ public class EntitySearchResult
 	
 	// Constructor for signs
 	public EntitySearchResult(SignBlockEntity sign, Vec3 playerPos,
-                              String[] signText, String matchedText, int previewLength)
+		String[] signText, String matchedText, int previewLength)
 	{
 		this(new Builder().entityType(EntityType.SIGN).pos(sign.getBlockPos())
 			.playerPos(playerPos).signText(signText)
@@ -60,11 +60,11 @@ public class EntitySearchResult
 	
 	// Constructor for item frames
 	public EntitySearchResult(ItemFrame itemFrame, Vec3 playerPos,
-                              String itemName, String matchedText, int previewLength)
+		String itemName, String matchedText, int previewLength)
 	{
 		this(new Builder().entityType(EntityType.ITEM_FRAME)
-			.pos(itemFrame.getPos()).playerPos(playerPos)
-			.itemName(itemName).combinedText(itemName).matchedText(matchedText)
+			.pos(itemFrame.getPos()).playerPos(playerPos).itemName(itemName)
+			.combinedText(itemName).matchedText(matchedText)
 			.previewLength(previewLength)
 			.updateTime(System.currentTimeMillis()));
 	}
@@ -254,68 +254,58 @@ public class EntitySearchResult
 			return new String[]{itemName};
 		}
 	}
-
-    public Component getFormattedResult(int index)
-    {
-        String typePrefix =
-                entityType == EntityType.SIGN ? "Sign" : "Item Frame";
-
-        if (isLocalData)
-        {
-            MutableComponent result =
-                    Component.literal(String.format("%d. ", index));
-
-            result.append(Component.literal(typePrefix));
-            result.append(Component.literal(" "));
-
-            MutableComponent localTag =
-                    Component.translatable("signfinder.label.local")
-                            .withStyle(style -> style
-                                    .withColor(ChatFormatting.DARK_GRAY)
-                                    .withItalic(true)
-                                    .withHoverEvent(new HoverEvent.ShowText(createLocalDataTooltip())));
-
-            result.append(localTag);
-
-            result.append(Component.literal(
-                    String.format(" [%.1fm] ", distance)));
-            result.append(Component.literal(formatPosition()));
-            result.append(Component.literal(" - "));
-            result.append(Component.literal(preview));
-
-            return result;
-        }
-        else
-        {
-            return Component.literal(
-                    String.format("%d. %s [%.1fm] %s - %s",
-                            index, typePrefix, distance,
-                            formatPosition(), preview));
-        }
-    }
-
-    private MutableComponent createLocalDataTooltip()
-    {
-        MutableComponent tooltip = Component.literal("");
-
-        tooltip.append(
-                Component.translatable("signfinder.tooltip.local_data_title")
-                        .withStyle(style -> style
-                                .withColor(ChatFormatting.GOLD)
-                                .withBold(true))
-        );
-
-        tooltip.append(Component.literal("\n"));
-
-        tooltip.append(
-                Component.translatable("signfinder.tooltip.local_data_desc")
-                        .withStyle(style -> style
-                                .withColor(ChatFormatting.GRAY))
-        );
-
-        return tooltip;
-    }
-
+	
+	public Component getFormattedResult(int index)
+	{
+		String typePrefix =
+			entityType == EntityType.SIGN ? "Sign" : "Item Frame";
+		
+		if(isLocalData)
+		{
+			MutableComponent result =
+				Component.literal(String.format("%d. ", index));
+			
+			result.append(Component.literal(typePrefix));
+			result.append(Component.literal(" "));
+			
+			MutableComponent localTag = Component
+				.translatable("signfinder.label.local")
+				.withStyle(style -> style.withColor(ChatFormatting.DARK_GRAY)
+					.withItalic(true).withHoverEvent(
+						new HoverEvent.ShowText(createLocalDataTooltip())));
+			
+			result.append(localTag);
+			
+			result.append(
+				Component.literal(String.format(" [%.1fm] ", distance)));
+			result.append(Component.literal(formatPosition()));
+			result.append(Component.literal(" - "));
+			result.append(Component.literal(preview));
+			
+			return result;
+		}else
+		{
+			return Component.literal(String.format("%d. %s [%.1fm] %s - %s",
+				index, typePrefix, distance, formatPosition(), preview));
+		}
+	}
+	
+	private MutableComponent createLocalDataTooltip()
+	{
+		MutableComponent tooltip = Component.literal("");
+		
+		tooltip.append(Component
+			.translatable("signfinder.tooltip.local_data_title").withStyle(
+				style -> style.withColor(ChatFormatting.GOLD).withBold(true)));
+		
+		tooltip.append(Component.literal("\n"));
+		
+		tooltip
+			.append(Component.translatable("signfinder.tooltip.local_data_desc")
+				.withStyle(style -> style.withColor(ChatFormatting.GRAY)));
+		
+		return tooltip;
+	}
 	
 	private String formatPosition()
 	{

@@ -7,7 +7,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.signfinder.services.CacheService;
 import net.signfinder.util.SignTextUtils;
@@ -115,7 +114,7 @@ public class SignDataCache
 	 */
 	public SignData createSignData(SignBlockEntity sign)
 	{
-        String[] lines = SignTextUtils.getSignTextArray(sign);
+		String[] lines = SignTextUtils.getSignTextArray(sign);
 		
 		String combinedText = String.join(" ", lines);
 		return new SignData(lines, combinedText, System.currentTimeMillis());

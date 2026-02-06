@@ -8,7 +8,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import net.minecraft.client.Minecraft;
 import org.slf4j.Logger;
@@ -50,11 +49,11 @@ public class FileOperationService implements DataPersistenceService
 	{
 		Minecraft client = Minecraft.getInstance();
 		Path gameDir = FabricLoader.getInstance().getGameDir();
-
+		
 		// Try to get current world name
 		String worldName = client.name();
-
-        // Use world-specific directory: saves/[world_name]/signfinder/autosave/
+		
+		// Use world-specific directory: saves/[world_name]/signfinder/autosave/
 		Path autoSaveDir = gameDir.resolve("saves").resolve(worldName)
 			.resolve("signfinder").resolve("autosave");
 		
@@ -69,8 +68,8 @@ public class FileOperationService implements DataPersistenceService
 		
 		return autoSaveDir;
 	}
-
-    /**
+	
+	/**
 	 * Sanitizes a string to be safe for use as a filename.
 	 */
 	private String sanitizeFileName(String name)

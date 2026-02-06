@@ -13,7 +13,7 @@ import net.signfinder.commands.core.CommandUtils;
 public class HighlightCommand extends BaseCommand
 {
 	public static int removeHighlight(
-            CommandContext<FabricClientCommandSource> ctx)
+		CommandContext<FabricClientCommandSource> ctx)
 	{
 		if(!validatePlayerInWorld(ctx))
 			return 0;
@@ -26,18 +26,21 @@ public class HighlightCommand extends BaseCommand
 		if(signFinder != null)
 		{
 			boolean removed = signFinder.removeSearchResultByPos(x, y, z);
-			if (removed)
+			if(removed)
 			{
-				ctx.getSource().sendFeedback(
-					Component.translatable("signfinder.message.highlight_removed", x,
-						y, z).withStyle(ChatFormatting.GREEN)
-                );
-			} else
+				ctx.getSource()
+					.sendFeedback(
+						Component
+							.translatable(
+								"signfinder.message.highlight_removed", x, y, z)
+							.withStyle(ChatFormatting.GREEN));
+			}else
 			{
-				ctx.getSource().sendFeedback(
-					Component.translatable("signfinder.message.highlight_not_found",
-						x, y, z).withStyle(ChatFormatting.YELLOW)
-                );
+				ctx.getSource()
+					.sendFeedback(Component
+						.translatable("signfinder.message.highlight_not_found",
+							x, y, z)
+						.withStyle(ChatFormatting.YELLOW));
 			}
 		}
 		
@@ -66,18 +69,22 @@ public class HighlightCommand extends BaseCommand
 				ChatFormatting mcColor = getMinecraftColor(color);
 				
 				Component colorComponent =
-					Component.translatable("signfinder.color." + colorName).withStyle(mcColor);
+					Component.translatable("signfinder.color." + colorName)
+						.withStyle(mcColor);
 				
-				Component message =
-					Component.translatable("signfinder.message.color_changed_to", x,
-						y, z).append(" ").append(colorComponent);
-				ctx.getSource()
-					.sendFeedback(message.copy().withStyle(ChatFormatting.GREEN));
+				Component message = Component
+					.translatable("signfinder.message.color_changed_to", x, y,
+						z)
+					.append(" ").append(colorComponent);
+				ctx.getSource().sendFeedback(
+					message.copy().withStyle(ChatFormatting.GREEN));
 			}else
 			{
-				ctx.getSource().sendFeedback(
-					Component.translatable("signfinder.message.highlight_not_found",
-						x, y, z).withStyle(ChatFormatting.YELLOW));
+				ctx.getSource()
+					.sendFeedback(Component
+						.translatable("signfinder.message.highlight_not_found",
+							x, y, z)
+						.withStyle(ChatFormatting.YELLOW));
 			}
 		}
 		

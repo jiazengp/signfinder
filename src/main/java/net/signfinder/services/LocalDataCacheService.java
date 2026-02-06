@@ -147,7 +147,7 @@ public class LocalDataCacheService
 	public void cleanupCachedLocalData()
 	{
 		Minecraft client = Minecraft.getInstance();
-		if(client.level== null || client.player == null)
+		if(client.level == null || client.player == null)
 			return;
 		
 		SignFinderConfig config = SignFinderMod.getInstance().getConfig();
@@ -216,7 +216,7 @@ public class LocalDataCacheService
 	public void validateCachedMemoryData()
 	{
 		Minecraft client = Minecraft.getInstance();
-		if(client.level== null || client.player == null)
+		if(client.level == null || client.player == null)
 			return;
 		
 		String worldKey = getCurrentWorldKey();
@@ -269,7 +269,7 @@ public class LocalDataCacheService
 	{
 		try
 		{
-			if(client.level== null)
+			if(client.level == null)
 				return;
 			String[] currentText = net.signfinder.util.SignTextUtils
 				.getSignText(client.level, pos);
@@ -311,8 +311,7 @@ public class LocalDataCacheService
 		Minecraft client = Minecraft.getInstance();
 		
 		return new SignSearchResult(pos,
-			client.player != null ? client.player.position()
-				: pos.getCenter(),
+			client.player != null ? client.player.position() : pos.getCenter(),
 			data.signText, data.matchedText,
 			SignFinderMod.getInstance().getConfig().text_preview_length);
 	}
@@ -321,35 +320,37 @@ public class LocalDataCacheService
 	 * Gets the current world dimension key for data grouping.
 	 * Automatically handles any dimension including custom modded dimensions.
 	 */
-
-    private static String getCurrentWorldKey()
-    {
-        Minecraft client = Minecraft.getInstance();
-        if (client.level == null)
-            return "unknown";
-
-        return client.level.dimension().toString(); // minecraft:overworld
-    }
+	
+	private static String getCurrentWorldKey()
+	{
+		Minecraft client = Minecraft.getInstance();
+		if(client.level == null)
+			return "unknown";
+		
+		return client.level.dimension().toString(); // minecraft:overworld
+	}
+	
 	/**
 	 * Converts a world registry key to a safe string identifier.
 	 * Handles vanilla dimensions with friendly names and custom dimensions with
 	 * full identifiers.
 	 */
-    private static String getDimensionKey(ResourceKey<@NotNull Level> dimensionKey)
-    {
-        if (dimensionKey == null)
-            return "unknown";
-
-        // Vanilla dimensions (Mojmap)
-        if (dimensionKey == Level.OVERWORLD)
-            return "overworld";
-        else if (dimensionKey == Level.NETHER)
-            return "nether";
-        else if (dimensionKey == Level.END)
-            return "end";
-
-        return dimensionKey.toString();
-    }
+	private static String getDimensionKey(
+		ResourceKey<@NotNull Level> dimensionKey)
+	{
+		if(dimensionKey == null)
+			return "unknown";
+		
+		// Vanilla dimensions (Mojmap)
+		if(dimensionKey == Level.OVERWORLD)
+			return "overworld";
+		else if(dimensionKey == Level.NETHER)
+			return "nether";
+		else if(dimensionKey == Level.END)
+			return "end";
+		
+		return dimensionKey.toString();
+	}
 	
 	/**
 	 * Sanitizes dimension keys to be safe for use in file operations and data

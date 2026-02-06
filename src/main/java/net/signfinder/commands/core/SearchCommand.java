@@ -18,8 +18,8 @@ import java.util.List;
 public class SearchCommand extends BaseCommand
 {
 	public static int executeSearch(
-            CommandContext<FabricClientCommandSource> ctx, Integer radius,
-            String presetName, SearchType forceType)
+		CommandContext<FabricClientCommandSource> ctx, Integer radius,
+		String presetName, SearchType forceType)
 	{
 		if(!validatePlayerInWorld(ctx))
 			return 0;
@@ -41,13 +41,11 @@ public class SearchCommand extends BaseCommand
 				searchType = SearchType.PRESET;
 			}else
 			{
-                String argName =
-                        forceType == SearchType.REGEX
-                                ? "pattern"
-                                : (forceType == SearchType.ARRAY ? "keywords" : "query");
-
-                queryString = StringArgumentType.getString(ctx, argName);
-
+				String argName = forceType == SearchType.REGEX ? "pattern"
+					: (forceType == SearchType.ARRAY ? "keywords" : "query");
+				
+				queryString = StringArgumentType.getString(ctx, argName);
+				
 				searchType = forceType != null ? forceType : SearchType.TEXT;
 			}
 			
@@ -59,11 +57,12 @@ public class SearchCommand extends BaseCommand
 		}catch(Exception e)
 		{
 			// Send helpful error message about using quotes
-			ctx.getSource().sendFeedback(
-				Component.translatable("signfinder.error.invalid_query_format")
-					.withStyle(ChatFormatting.RED));
 			ctx.getSource()
-				.sendFeedback(Component.translatable("signfinder.help.use_quotes")
+				.sendFeedback(Component
+					.translatable("signfinder.error.invalid_query_format")
+					.withStyle(ChatFormatting.RED));
+			ctx.getSource().sendFeedback(
+				Component.translatable("signfinder.help.use_quotes")
 					.withStyle(ChatFormatting.YELLOW));
 			return 0;
 		}
@@ -125,8 +124,8 @@ public class SearchCommand extends BaseCommand
 		
 		int searchRadius = config.default_search_radius;
 		
-		ctx.getSource().sendFeedback(
-			Component.translatable("signfinder.search.all_signs", searchRadius));
+		ctx.getSource().sendFeedback(Component
+			.translatable("signfinder.search.all_signs", searchRadius));
 		
 		// Use empty query to match all entities (based on config)
 		SearchQuery query =
@@ -142,8 +141,8 @@ public class SearchCommand extends BaseCommand
 		}
 		
 		String cacheKey = getPlayerCacheKey();
-		String queryString =
-			Component.translatable("signfinder.export.all_signs_title").getString();
+		String queryString = Component
+			.translatable("signfinder.export.all_signs_title").getString();
 		int currentPage = 1;
 		CommandUtils.cacheEntitySearchResults(cacheKey, entityResults,
 			currentPage, searchRadius);

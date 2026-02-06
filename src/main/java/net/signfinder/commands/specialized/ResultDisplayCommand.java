@@ -41,17 +41,20 @@ public class ResultDisplayCommand
 		int startIndex = indices[0];
 		int endIndex = indices[1];
 		
-		source.sendFeedback(
-			Component.translatable("signfinder.message.search_results_title",
-				results.size(), searchRadius).withStyle(ChatFormatting.YELLOW));
-		source.sendFeedback(
-                Component.translatable("signfinder.message.page_info", page, totalPages)
-				.withStyle(ChatFormatting.GRAY));
+		source
+			.sendFeedback(Component
+				.translatable("signfinder.message.search_results_title",
+					results.size(), searchRadius)
+				.withStyle(ChatFormatting.YELLOW));
+		source.sendFeedback(Component
+			.translatable("signfinder.message.page_info", page, totalPages)
+			.withStyle(ChatFormatting.GRAY));
 		
 		// 显示结果
 		for(int i = startIndex; i < endIndex; i++)
 		{
-			MutableComponent text = textCreator.createText(results.get(i), i + 1);
+			MutableComponent text =
+				textCreator.createText(results.get(i), i + 1);
 			source.sendFeedback(text);
 		}
 		

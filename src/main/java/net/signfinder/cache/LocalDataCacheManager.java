@@ -136,7 +136,7 @@ public class LocalDataCacheManager
 	 * This is used for full range updates regardless of search criteria.
 	 */
 	public List<EntitySearchResult> getAllLocalDataInRange(Vec3 playerPos,
-                                                           int radius)
+		int radius)
 	{
 		try
 		{

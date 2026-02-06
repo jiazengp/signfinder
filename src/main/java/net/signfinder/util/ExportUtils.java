@@ -80,9 +80,8 @@ public enum ExportUtils
 			if(Minecraft.getInstance().player != null)
 			{
 				return new SignSearchResult(entityResult.getPos(),
-					Minecraft.getInstance().player.position(),
-					itemFrameText, entityResult.getMatchedText(),
-					DEFAULT_PREVIEW_LENGTH);
+					Minecraft.getInstance().player.position(), itemFrameText,
+					entityResult.getMatchedText(), DEFAULT_PREVIEW_LENGTH);
 			}
 		}
 		return null;
@@ -121,9 +120,8 @@ public enum ExportUtils
 			return true;
 		}catch(Exception e)
 		{
-			mc.player.displayClientMessage(
-				Component.translatable("signfinder.export.error", e.getMessage()),
-				false);
+			mc.player.displayClientMessage(Component.translatable(
+				"signfinder.export.error", e.getMessage()), false);
 			return false;
 		}
 	}
@@ -190,11 +188,10 @@ public enum ExportUtils
 			+ (format.isJsonFormat() ? ".json" : ".txt");
 		
 		Minecraft mc = Minecraft.getInstance();
-        String worldName = mc.level != null
-                ? mc.level.dimension().identifier().toString()
-                : "Unknown";
-
-        String query = searchQuery != null ? searchQuery : "All Signs";
+		String worldName = mc.level != null
+			? mc.level.dimension().identifier().toString() : "Unknown";
+		
+		String query = searchQuery != null ? searchQuery : "All Signs";
 		
 		return new ExportContext(query, worldName, timestamp, fileName,
 			formattedExportTime);
@@ -260,15 +257,16 @@ public enum ExportUtils
 			result.getMatchedText() != null ? result.getMatchedText() : "");
 	}
 	
-	private static void sendExportSuccessMessages(Minecraft mc,
-		int resultCount, String fileName, Path filePath)
+	private static void sendExportSuccessMessages(Minecraft mc, int resultCount,
+		String fileName, Path filePath)
 	{
 		// Success message with count and filename
-		Objects.requireNonNull(mc.player).displayClientMessage(Component.translatable(
-			"signfinder.export.success", resultCount, fileName), false);
+		Objects.requireNonNull(mc.player).displayClientMessage(Component
+			.translatable("signfinder.export.success", resultCount, fileName),
+			false);
 		
 		// Clickable file path message
-        MutableComponent fileLocationMessage =
+		MutableComponent fileLocationMessage =
 			Component.translatable("signfinder.export.file_location_prefix")
 				.append(createClickableFilePath(filePath));
 		mc.player.displayClientMessage(fileLocationMessage, false);
@@ -280,9 +278,9 @@ public enum ExportUtils
 		
 		return Component.literal(pathString)
 			.withStyle(style -> style.withColor(ChatFormatting.AQUA)
-                    .withUnderlined(true)
-				.withHoverEvent(new HoverEvent.ShowText(
-					Component.translatable("signfinder.tooltip.click_to_open_file")))
+				.withUnderlined(true)
+				.withHoverEvent(new HoverEvent.ShowText(Component
+					.translatable("signfinder.tooltip.click_to_open_file")))
 				.withClickEvent(new ClickEvent.OpenFile(pathString)));
 	}
 }

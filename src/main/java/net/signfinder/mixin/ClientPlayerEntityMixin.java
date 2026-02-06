@@ -13,19 +13,19 @@ import net.minecraft.client.player.LocalPlayer;
 @Mixin(LocalPlayer.class)
 public class ClientPlayerEntityMixin extends AbstractClientPlayer
 {
-    public ClientPlayerEntityMixin(SignFinderMod chestEspMod, ClientLevel world,
-                                   GameProfile profile)
-    {
-        super(world, profile);
-    }
-
-    @Inject(at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/player/AbstractClientPlayer;tick()V",
-            ordinal = 0), method = "tick()V")
-    private void onTick(CallbackInfo ci)
-    {
-        SignFinderMod signFinderMod = SignFinderMod.getInstance();
-        if(signFinderMod != null)
-            signFinderMod.onUpdate();
-    }
+	public ClientPlayerEntityMixin(SignFinderMod chestEspMod, ClientLevel world,
+		GameProfile profile)
+	{
+		super(world, profile);
+	}
+	
+	@Inject(at = @At(value = "INVOKE",
+		target = "Lnet/minecraft/client/player/AbstractClientPlayer;tick()V",
+		ordinal = 0), method = "tick()V")
+	private void onTick(CallbackInfo ci)
+	{
+		SignFinderMod signFinderMod = SignFinderMod.getInstance();
+		if(signFinderMod != null)
+			signFinderMod.onUpdate();
+	}
 }

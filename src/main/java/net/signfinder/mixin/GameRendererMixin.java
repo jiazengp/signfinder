@@ -12,9 +12,12 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 @Mixin(GameRenderer.class)
 public abstract class GameRendererMixin implements AutoCloseable
 {
-	@WrapOperation(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;bobView(Lcom/mojang/blaze3d/vertex/PoseStack;F)V", ordinal = 0),method = "renderLevel(Lnet/minecraft/client/DeltaTracker;)V")
+	@WrapOperation(at = @At(value = "INVOKE",
+		target = "Lnet/minecraft/client/renderer/GameRenderer;bobView(Lcom/mojang/blaze3d/vertex/PoseStack;F)V",
+		ordinal = 0),
+		method = "renderLevel(Lnet/minecraft/client/DeltaTracker;)V")
 	private void onBobView(GameRenderer instance, PoseStack matrices,
-                           float tickDelta, Operation<Void> original)
+		float tickDelta, Operation<Void> original)
 	{
 		SignFinderMod signFinder = SignFinderMod.getInstance();
 		
