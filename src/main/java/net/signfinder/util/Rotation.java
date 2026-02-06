@@ -12,19 +12,19 @@ import net.minecraft.world.phys.Vec3;
 
 public record Rotation(float yaw, float pitch)
 {
-    public Vec3 toLookVec()
-    {
-        float radPerDeg = Mth.DEG_TO_RAD;
-        float pi = Mth.PI;
-
-        float adjustedYaw = -Mth.wrapDegrees(yaw) * radPerDeg - pi;
-        float cosYaw = Mth.cos(adjustedYaw);
-        float sinYaw = Mth.sin(adjustedYaw);
-
-        float adjustedPitch = -Mth.wrapDegrees(pitch) * radPerDeg;
-        float nCosPitch = -Mth.cos(adjustedPitch);
-        float sinPitch = Mth.sin(adjustedPitch);
-
-        return new Vec3(sinYaw * nCosPitch, sinPitch, cosYaw * nCosPitch);
-    }
+	public Vec3 toLookVec()
+	{
+		float radPerDeg = Mth.DEG_TO_RAD;
+		float pi = Mth.PI;
+		
+		float adjustedYaw = -Mth.wrapDegrees(yaw) * radPerDeg - pi;
+		float cosYaw = Mth.cos(adjustedYaw);
+		float sinYaw = Mth.sin(adjustedYaw);
+		
+		float adjustedPitch = -Mth.wrapDegrees(pitch) * radPerDeg;
+		float nCosPitch = -Mth.cos(adjustedPitch);
+		float sinPitch = Mth.sin(adjustedPitch);
+		
+		return new Vec3(sinYaw * nCosPitch, sinPitch, cosYaw * nCosPitch);
+	}
 }

@@ -3,11 +3,9 @@ package net.signfinder.util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 import net.signfinder.SignFinderConfig;
 import net.signfinder.SignFinderMod;
@@ -29,7 +27,7 @@ public enum EntityValidationUtils
 	 * Checks if the sign still exists and if its content has changed.
 	 */
 	public static ValidationResult validateSignEntity(Level world, BlockPos pos,
-                                                      SignSearchResult cached)
+		SignSearchResult cached)
 	{
 		Minecraft client = Minecraft.getInstance();
 		if(client.player == null)
@@ -124,7 +122,7 @@ public enum EntityValidationUtils
 	 * Validates if an entity is within search range.
 	 */
 	public static boolean isInSearchRange(Vec3 entityPos, Vec3 playerPos,
-                                          double radius)
+		double radius)
 	{
 		double distance = entityPos.distanceTo(playerPos);
 		return distance <= radius;

@@ -25,10 +25,10 @@ public class HighlightRenderManager
 	}
 	
 	public void renderHighlights(PoseStack PoseStack, float partialTicks,
-                                 SignFinderConfig config, List<SignBlockEntity> searchResultSigns,
-                                 List<ItemFrame> searchResultItemFrames,
-                                 List<SignBlockEntity> highlightedSigns,
-                                 List<ItemFrame> highlightedItemFrames)
+		SignFinderConfig config, List<SignBlockEntity> searchResultSigns,
+		List<ItemFrame> searchResultItemFrames,
+		List<SignBlockEntity> highlightedSigns,
+		List<ItemFrame> highlightedItemFrames)
 	{
 		if(!config.enable_sign_highlighting)
 			return;
@@ -57,12 +57,11 @@ public class HighlightRenderManager
 			|| !highlightedItemFrames.isEmpty();
 	}
 	
-	private void renderEntityHighlights(PoseStack PoseStack,
-                                        float partialTicks, SignFinderConfig config,
-                                        List<SignBlockEntity> searchResultSigns,
-                                        List<ItemFrame> searchResultItemFrames,
-                                        List<SignBlockEntity> highlightedSigns,
-                                        List<ItemFrame> highlightedItemFrames)
+	private void renderEntityHighlights(PoseStack PoseStack, float partialTicks,
+		SignFinderConfig config, List<SignBlockEntity> searchResultSigns,
+		List<ItemFrame> searchResultItemFrames,
+		List<SignBlockEntity> highlightedSigns,
+		List<ItemFrame> highlightedItemFrames)
 	{
 		SignEspStyle style = config.highlight_style;
 		
@@ -75,9 +74,8 @@ public class HighlightRenderManager
 			highlightedSigns, highlightedItemFrames);
 	}
 	
-	private void renderSearchResults(PoseStack PoseStack,
-		float partialTicks, SignEspStyle style,
-		List<SignBlockEntity> searchResultSigns,
+	private void renderSearchResults(PoseStack PoseStack, float partialTicks,
+		SignEspStyle style, List<SignBlockEntity> searchResultSigns,
 		List<ItemFrame> searchResultItemFrames)
 	{
 		// 分别渲染每个搜索结果告示牌，支持自定义颜色
@@ -85,8 +83,7 @@ public class HighlightRenderManager
 		{
 			AABB signAABB = new AABB(sign.getBlockPos());
 			int color = colorManager.getHighlightColor(sign.getBlockPos());
-			renderSingleEntity(PoseStack, partialTicks, signAABB, color,
-				style);
+			renderSingleEntity(PoseStack, partialTicks, signAABB, color, style);
 		}
 		
 		// 分别渲染每个搜索结果物品展示框，支持自定义颜色
@@ -124,8 +121,7 @@ public class HighlightRenderManager
 			List<AABB> autoDetectedItemFrameAABBes = new ArrayList<>();
 			for(ItemFrame itemFrame : highlightedItemFrames)
 			{
-				autoDetectedItemFrameAABBes
-					.add(new AABB(itemFrame.getPos()));
+				autoDetectedItemFrameAABBes.add(new AABB(itemFrame.getPos()));
 			}
 			renderEntityGroup(PoseStack, partialTicks,
 				autoDetectedItemFrameAABBes, defaultColor, style);
@@ -174,8 +170,8 @@ public class HighlightRenderManager
 			// 追踪线使用配置的透明度
 			int tracerColor =
 				ColorUtils.combineRgbWithAlpha(color, configuredAlpha);
-			RenderUtils.drawTracers(PoseStack, partialTicks, ends,
-				tracerColor, false);
+			RenderUtils.drawTracers(PoseStack, partialTicks, ends, tracerColor,
+				false);
 		}
 	}
 }

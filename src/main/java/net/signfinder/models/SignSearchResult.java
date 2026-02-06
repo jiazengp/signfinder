@@ -1,6 +1,5 @@
 package net.signfinder.models;
 
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
@@ -17,7 +16,7 @@ public class SignSearchResult
 	private final long updateTime;
 	
 	public SignSearchResult(BlockPos pos, Vec3 playerPos, String[] signText,
-                            String matchedText, int previewLength)
+		String matchedText, int previewLength)
 	{
 		this.pos = pos;
 		this.distance = Math.sqrt(pos.distToCenterSqr(playerPos));
@@ -30,7 +29,7 @@ public class SignSearchResult
 	}
 	
 	public SignSearchResult(BlockPos pos, Vec3 playerPos, String[] signText,
-                            String matchedText, int previewLength, long updateTime)
+		String matchedText, int previewLength, long updateTime)
 	{
 		this.pos = pos;
 		this.distance = Math.sqrt(pos.distToCenterSqr(playerPos));
@@ -111,7 +110,7 @@ public class SignSearchResult
 	{
 		return updateTime;
 	}
-
+	
 	private String formatPosition()
 	{
 		return String.format("(%d, %d, %d)", pos.getX(), pos.getY(),

@@ -42,10 +42,12 @@ public class ExportCommand extends BaseCommand
 		// Export current search results if available
 		if(currentEntityResults != null && !currentEntityResults.isEmpty())
 		{
-			ctx.getSource().sendFeedback(
-				Component.translatable("signfinder.export.exporting_results",
+			ctx.getSource()
+				.sendFeedback(Component.translatable(
+					"signfinder.export.exporting_results",
 					currentQuery != null ? currentQuery
-						: Component.translatable("signfinder.export.unknown_query")
+						: Component
+							.translatable("signfinder.export.unknown_query")
 							.getString()));
 			boolean success = ExportUtils.INSTANCE.exportEntitySearchResult(
 				currentEntityResults, currentQuery, format);
@@ -60,7 +62,7 @@ public class ExportCommand extends BaseCommand
 		
 		// Generate dynamic message based on search range
 		Component searchRangeText =
-                Component.translatable(config.entity_search_range.toString());
+			Component.translatable(config.entity_search_range.toString());
 		ctx.getSource()
 			.sendFeedback(Component.translatable("signfinder.export.no_cache",
 				searchRangeText.getString(), defaultRadius));
@@ -82,15 +84,16 @@ public class ExportCommand extends BaseCommand
 			
 			if(allEntities.isEmpty())
 			{
-				ctx.getSource().sendFeedback(
-                        Component.translatable("signfinder.export.no_signs_found",
+				ctx.getSource()
+					.sendFeedback(Component.translatable(
+						"signfinder.export.no_signs_found",
 						searchRangeText.getString(), defaultRadius));
 				return 1;
 			}
 			
 			boolean success =
 				ExportUtils.INSTANCE.exportEntitySearchResult(allEntities,
-                        Component.translatable("signfinder.export.all_signs_title")
+					Component.translatable("signfinder.export.all_signs_title")
 						.getString(),
 					format);
 			return success ? 0 : 1;

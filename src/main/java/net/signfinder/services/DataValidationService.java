@@ -34,7 +34,7 @@ public class DataValidationService
 	 * @return Validation result indicating current status
 	 */
 	public ValidationResult validateSignAtPosition(Level world, BlockPos pos,
-                                                   SignSearchResult cachedResult)
+		SignSearchResult cachedResult)
 	{
 		Minecraft client = Minecraft.getInstance();
 		if(client.player == null)
@@ -129,9 +129,10 @@ public class DataValidationService
 	 * Validates if an entity is within search range.
 	 */
 	public boolean isInSearchRange(Vec3 entityPos, Vec3 playerPos,
-                                   double radius)
+		double radius)
 	{
-        return EntityValidationUtils.isInSearchRange(entityPos, playerPos, radius);
+		return EntityValidationUtils.isInSearchRange(entityPos, playerPos,
+			radius);
 	}
 	
 	public enum ValidationStatus
