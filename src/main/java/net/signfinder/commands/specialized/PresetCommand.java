@@ -2,11 +2,10 @@ package net.signfinder.commands.specialized;
 
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
 import net.signfinder.SignFinderConfig;
 import net.signfinder.SignFinderMod;
 import net.signfinder.commands.core.BaseCommand;
@@ -20,9 +19,9 @@ public class PresetCommand extends BaseCommand
 			SignFinderMod.getInstance().getConfigHolder().getConfig();
 		
 		ctx.getSource().sendFeedback(
-			Text.translatable("signfinder.message.search_presets_title")
-				.formatted(Formatting.YELLOW));
-		ctx.getSource().sendFeedback(Text.literal(""));
+			Component.translatable("signfinder.message.search_presets_title")
+				.withStyle(ChatFormatting.YELLOW));
+		ctx.getSource().sendFeedback(Component.literal(""));
 		
 		displayTextPresets(ctx, config);
 		displayRegexPresets(ctx, config);
@@ -37,21 +36,21 @@ public class PresetCommand extends BaseCommand
 		if(!config.search_presets.text_presets.isEmpty())
 		{
 			ctx.getSource()
-				.sendFeedback(Text
+				.sendFeedback(Component
 					.translatable("signfinder.message.text_presets_header",
 						config.search_presets.text_presets.size())
-					.formatted(Formatting.GREEN));
+					.withStyle(ChatFormatting.GREEN));
 			config.search_presets.text_presets.forEach((name, value) -> {
-				MutableText presetText =
-					createPresetText(name, value, Formatting.AQUA);
+                Component presetText =
+					createPresetText(name, value, ChatFormatting.AQUA);
 				ctx.getSource().sendFeedback(presetText);
 			});
-			ctx.getSource().sendFeedback(Text.literal(""));
+			ctx.getSource().sendFeedback(Component.literal(""));
 		}else
 		{
 			ctx.getSource().sendFeedback(
-				Text.translatable("signfinder.message.no_text_presets")
-					.formatted(Formatting.GRAY));
+				Component.translatable("signfinder.message.no_text_presets")
+					.withStyle(ChatFormatting.GRAY));
 		}
 	}
 	
@@ -61,56 +60,59 @@ public class PresetCommand extends BaseCommand
 		if(!config.search_presets.regex_presets.isEmpty())
 		{
 			ctx.getSource()
-				.sendFeedback(Text
+				.sendFeedback(Component
 					.translatable("signfinder.message.regex_presets_header",
 						config.search_presets.regex_presets.size())
-					.formatted(Formatting.GREEN));
+					.withStyle(ChatFormatting.GREEN));
 			config.search_presets.regex_presets.forEach((name, value) -> {
-				MutableText presetText =
-					createPresetText(name, value, Formatting.LIGHT_PURPLE);
+				Component presetText =
+					createPresetText(name, value, ChatFormatting.LIGHT_PURPLE);
 				ctx.getSource().sendFeedback(presetText);
 			});
-			ctx.getSource().sendFeedback(Text.literal(""));
+			ctx.getSource().sendFeedback(Component.literal(""));
 		}else
 		{
 			ctx.getSource().sendFeedback(
-				Text.translatable("signfinder.message.no_regex_presets")
-					.formatted(Formatting.GRAY));
+				Component.translatable("signfinder.message.no_regex_presets")
+					.withStyle(ChatFormatting.GRAY));
 		}
 	}
-	
-	private static MutableText createPresetText(String name, String value,
-		Formatting nameColor)
-	{
-		MutableText presetText = Text.literal("• " + name).formatted(nameColor)
-			.append(Text.literal(" → ").formatted(Formatting.GRAY))
-			.append(Text.literal(value).formatted(Formatting.WHITE));
-		
-		// 添加点击复制功能和悬停提示
-		presetText.styled(style -> style
-			.withClickEvent(
-				new ClickEvent.SuggestCommand(CommandConstants.COMMAND_PREFIX
-					+ " " + CommandConstants.SUBCOMMAND_PRESET + " " + name))
-			.withHoverEvent(new HoverEvent.ShowText(Text
-				.translatable("signfinder.message.preset_click_hint", name))));
-		
-		return presetText;
-	}
-	
-	private static void displayUsageInstructions(
+
+    private static Component createPresetText(String name, String value, ChatFormatting nameColor)
+    {
+        return Component.literal("• " + name)
+                .withStyle(style -> style
+                        .withColor(nameColor)
+                        .withClickEvent(new ClickEvent.SuggestCommand(
+                                CommandConstants.COMMAND_PREFIX + " "
+                                        + CommandConstants.SUBCOMMAND_PRESET + " " + name
+                        ))
+                        .withHoverEvent(new HoverEvent.ShowText(
+                                Component.translatable(
+                                        "signfinder.message.preset_click_hint",
+                                        name
+                                )
+                        ))
+                )
+                .append(Component.literal(" → ").withStyle(ChatFormatting.GRAY))
+                .append(Component.literal(value).withStyle(ChatFormatting.WHITE));
+    }
+
+
+    private static void displayUsageInstructions(
 		CommandContext<FabricClientCommandSource> ctx, SignFinderConfig config)
 	{
 		if(config.search_presets.text_presets.isEmpty()
 			&& config.search_presets.regex_presets.isEmpty())
 		{
 			ctx.getSource().sendFeedback(
-				Text.translatable("signfinder.message.preset_usage_help")
-					.formatted(Formatting.GRAY));
+				Component.translatable("signfinder.message.preset_usage_help")
+					.withStyle(ChatFormatting.GRAY));
 		}else
 		{
 			ctx.getSource().sendFeedback(
-				Text.translatable("signfinder.message.preset_usage_tip")
-					.formatted(Formatting.GRAY));
+				Component.translatable("signfinder.message.preset_usage_tip")
+					.withStyle(ChatFormatting.GRAY));
 		}
 	}
 }

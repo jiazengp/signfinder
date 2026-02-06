@@ -3,13 +3,12 @@ package net.signfinder.services;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.decoration.ItemFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.minecraft.block.entity.SignBlockEntity;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.decoration.ItemFrameEntity;
-import net.minecraft.util.math.BlockPos;
 import net.signfinder.models.SignSearchResult;
 import net.signfinder.util.ChunkUtils;
 import net.signfinder.util.ItemFrameUtils;
@@ -25,7 +24,7 @@ public class EntityValidationService
 	private static final Logger LOGGER =
 		LoggerFactory.getLogger(EntityValidationService.class);
 	
-	private final Map<BlockPos, ItemFrameEntity> itemFramePositionIndex =
+	private final Map<BlockPos, ItemFrame> itemFramePositionIndex =
 		new HashMap<>();
 	private final DataValidationService validationService;
 	
@@ -41,10 +40,10 @@ public class EntityValidationService
 	{
 		itemFramePositionIndex.clear();
 		ChunkUtils.getLoadedEntities().forEach(entity -> {
-			if(entity instanceof ItemFrameEntity itemFrame
+			if(entity instanceof ItemFrame itemFrame
 				&& ItemFrameUtils.hasItem(itemFrame))
 			{
-				itemFramePositionIndex.put(itemFrame.getBlockPos(), itemFrame);
+				itemFramePositionIndex.put(itemFrame.getPos(), itemFrame);
 			}
 		});
 		
@@ -55,7 +54,7 @@ public class EntityValidationService
 	/**
 	 * Get item frame at specific position from index.
 	 */
-	public ItemFrameEntity getItemFrameAt(BlockPos pos)
+	public ItemFrame getItemFrameAt(BlockPos pos)
 	{
 		return itemFramePositionIndex.get(pos);
 	}
@@ -63,7 +62,7 @@ public class EntityValidationService
 	/**
 	 * Get all indexed item frames.
 	 */
-	public Map<BlockPos, ItemFrameEntity> getAllItemFrames()
+	public Map<BlockPos, ItemFrame> getAllItemFrames()
 	{
 		return Map.copyOf(itemFramePositionIndex);
 	}
@@ -77,16 +76,16 @@ public class EntityValidationService
 	 *            Previously cached result for comparison
 	 * @return Validation result indicating current status
 	 */
-	public ValidationResult validateSignEntity(SignBlockEntity signEntity,
+	public ValidationResult validateSignEntity(ItemFrame signEntity,
 		SignSearchResult cachedResult)
 	{
-		MinecraftClient client = MinecraftClient.getInstance();
-		if(client.world == null)
+		Minecraft client = Minecraft.getInstance();
+		if(client.level == null)
 		{
 			return new ValidationResult(ValidationStatus.VALID, null);
 		}
 		
-		return validationService.validateSignAtPosition(client.world,
+		return validationService.validateSignAtPosition(client.level,
 			signEntity.getPos(), cachedResult);
 	}
 	
@@ -97,16 +96,16 @@ public class EntityValidationService
 	 *            The item frame entity to validate
 	 * @return true if item frame is still valid
 	 */
-	public boolean validateItemFrame(ItemFrameEntity itemFrame)
+	public boolean validateItemFrame(ItemFrame itemFrame)
 	{
 		try
 		{
 			// Check if item frame still exists and has an item
-			return itemFrame.isAlive() && ItemFrameUtils.hasItem(itemFrame);
+			return !itemFrame.isRemoved() && ItemFrameUtils.hasItem(itemFrame);
 		}catch(Exception e)
 		{
 			LOGGER.debug("Item frame validation failed at {}: {}",
-				itemFrame.getBlockPos(), e.getMessage());
+				itemFrame.getPos(), e.getMessage());
 			return false;
 		}
 	}
@@ -117,16 +116,16 @@ public class EntityValidationService
 	 */
 	public EntityValidationResult validateAllCachedEntities(
 		Map<BlockPos, SignSearchResult> cachedSigns,
-		Map<BlockPos, ItemFrameEntity> cachedItemFrames)
+		Map<BlockPos, ItemFrame> cachedItemFrames)
 	{
-		MinecraftClient client = MinecraftClient.getInstance();
-		if(client.world == null)
+		Minecraft client = Minecraft.getInstance();
+		if(client.level == null)
 		{
 			return new EntityValidationResult(Map.of(), Map.of());
 		}
 		
 		Map<BlockPos, SignSearchResult> validSigns = new HashMap<>();
-		Map<BlockPos, ItemFrameEntity> validItemFrames = new HashMap<>();
+		Map<BlockPos, ItemFrame> validItemFrames = new HashMap<>();
 		
 		// Validate cached signs
 		for(Map.Entry<BlockPos, SignSearchResult> entry : cachedSigns
@@ -136,7 +135,7 @@ public class EntityValidationService
 			SignSearchResult cachedResult = entry.getValue();
 			
 			ValidationResult validation = validationService
-				.validateSignAtPosition(client.world, pos, cachedResult);
+				.validateSignAtPosition(client.level, pos, cachedResult);
 			
 			switch(validation.status())
 			{
@@ -156,11 +155,11 @@ public class EntityValidationService
 		}
 		
 		// Validate cached item frames
-		for(Map.Entry<BlockPos, ItemFrameEntity> entry : cachedItemFrames
+		for(Map.Entry<BlockPos, ItemFrame> entry : cachedItemFrames
 			.entrySet())
 		{
 			BlockPos pos = entry.getKey();
-			ItemFrameEntity itemFrame = entry.getValue();
+			ItemFrame itemFrame = entry.getValue();
 			
 			if(validateItemFrame(itemFrame))
 			{
@@ -185,11 +184,11 @@ public class EntityValidationService
 	public static class EntityValidationResult
 	{
 		public final Map<BlockPos, SignSearchResult> validSigns;
-		public final Map<BlockPos, ItemFrameEntity> validItemFrames;
+		public final Map<BlockPos, ItemFrame> validItemFrames;
 		
 		public EntityValidationResult(
 			Map<BlockPos, SignSearchResult> validSigns,
-			Map<BlockPos, ItemFrameEntity> validItemFrames)
+			Map<BlockPos, ItemFrame> validItemFrames)
 		{
 			this.validSigns = validSigns;
 			this.validItemFrames = validItemFrames;

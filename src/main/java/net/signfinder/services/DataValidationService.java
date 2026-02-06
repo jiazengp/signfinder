@@ -1,12 +1,13 @@
 package net.signfinder.services;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.signfinder.SignFinderConfig;
 import net.signfinder.SignFinderMod;
 import net.signfinder.models.SignSearchResult;
+import net.signfinder.util.EntityValidationUtils;
 import net.signfinder.util.SignTextUtils;
 
 import org.slf4j.Logger;
@@ -32,10 +33,10 @@ public class DataValidationService
 	 *            Previously cached result
 	 * @return Validation result indicating current status
 	 */
-	public ValidationResult validateSignAtPosition(World world, BlockPos pos,
-		SignSearchResult cachedResult)
+	public ValidationResult validateSignAtPosition(Level world, BlockPos pos,
+                                                   SignSearchResult cachedResult)
 	{
-		MinecraftClient client = MinecraftClient.getInstance();
+		Minecraft client = Minecraft.getInstance();
 		if(client.player == null)
 		{
 			return new ValidationResult(ValidationStatus.VALID, null);
@@ -43,7 +44,7 @@ public class DataValidationService
 		
 		SignFinderConfig config = SignFinderMod.getInstance().getConfig();
 		double distance =
-			Math.sqrt(pos.getSquaredDistance(client.player.getEntityPos()));
+			Math.sqrt(pos.distToCenterSqr(client.player.position()));
 		boolean inRange = distance <= config.default_search_radius;
 		
 		try
@@ -93,7 +94,7 @@ public class DataValidationService
 			{
 				// Text has changed, create updated result
 				SignSearchResult updatedResult = new SignSearchResult(pos,
-					client.player.getEntityPos(), currentText,
+					client.player.position(), currentText,
 					String.join(" ", currentText), config.text_preview_length);
 				LOGGER.debug("Sign text changed at position: {}", pos);
 				return new ValidationResult(ValidationStatus.MODIFIED,
@@ -110,7 +111,7 @@ public class DataValidationService
 	/**
 	 * Checks if a sign block still exists at the given position.
 	 */
-	public boolean isSignStillValid(World world, BlockPos pos)
+	public boolean isSignStillValid(Level world, BlockPos pos)
 	{
 		try
 		{
@@ -127,11 +128,10 @@ public class DataValidationService
 	/**
 	 * Validates if an entity is within search range.
 	 */
-	public boolean isInSearchRange(Vec3d entityPos, Vec3d playerPos,
-		double radius)
+	public boolean isInSearchRange(Vec3 entityPos, Vec3 playerPos,
+                                   double radius)
 	{
-		double distance = entityPos.distanceTo(playerPos);
-		return distance <= radius;
+        return EntityValidationUtils.isInSearchRange(entityPos, playerPos, radius);
 	}
 	
 	public enum ValidationStatus

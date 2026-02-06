@@ -2,7 +2,7 @@ package net.signfinder.managers;
 
 import java.util.List;
 
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 import net.signfinder.models.SignSearchResult;
 import net.signfinder.services.DataPersistenceService;
 import net.signfinder.services.DataValidationService;

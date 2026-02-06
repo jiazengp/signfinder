@@ -5,9 +5,9 @@ import java.util.List;
 import com.mojang.brigadier.context.CommandContext;
 
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.phys.Vec3;
 import net.signfinder.core.SignExportFormat;
 import net.signfinder.models.EntitySearchResult;
 import net.signfinder.SignFinderConfig;
@@ -32,7 +32,7 @@ public class ExportCommand extends BaseCommand
 		SignExportFormat format = exportFormat == null
 			? SignExportFormatArgument.getFormat(ctx, "format") : exportFormat;
 		SignFinderConfig config = signFinder.getConfigHolder().getConfig();
-		MinecraftClient mc = MinecraftClient.getInstance();
+		Minecraft mc = Minecraft.getInstance();
 		
 		String playerKey = getPlayerCacheKey();
 		List<EntitySearchResult> currentEntityResults =
@@ -43,9 +43,9 @@ public class ExportCommand extends BaseCommand
 		if(currentEntityResults != null && !currentEntityResults.isEmpty())
 		{
 			ctx.getSource().sendFeedback(
-				Text.translatable("signfinder.export.exporting_results",
+				Component.translatable("signfinder.export.exporting_results",
 					currentQuery != null ? currentQuery
-						: Text.translatable("signfinder.export.unknown_query")
+						: Component.translatable("signfinder.export.unknown_query")
 							.getString()));
 			boolean success = ExportUtils.INSTANCE.exportEntitySearchResult(
 				currentEntityResults, currentQuery, format);
@@ -55,14 +55,14 @@ public class ExportCommand extends BaseCommand
 		// No search results exist, export according to config settings
 		if(mc.player == null)
 			return 0;
-		Vec3d playerPos = mc.player.getEntityPos();
+		Vec3 playerPos = mc.player.position();
 		int defaultRadius = config.default_search_radius;
 		
 		// Generate dynamic message based on search range
-		Text searchRangeText =
-			Text.translatable(config.entity_search_range.toString());
+		Component searchRangeText =
+                Component.translatable(config.entity_search_range.toString());
 		ctx.getSource()
-			.sendFeedback(Text.translatable("signfinder.export.no_cache",
+			.sendFeedback(Component.translatable("signfinder.export.no_cache",
 				searchRangeText.getString(), defaultRadius));
 		
 		// Search for all entities using empty query (matches everything)
@@ -83,14 +83,14 @@ public class ExportCommand extends BaseCommand
 			if(allEntities.isEmpty())
 			{
 				ctx.getSource().sendFeedback(
-					Text.translatable("signfinder.export.no_signs_found",
+                        Component.translatable("signfinder.export.no_signs_found",
 						searchRangeText.getString(), defaultRadius));
 				return 1;
 			}
 			
 			boolean success =
 				ExportUtils.INSTANCE.exportEntitySearchResult(allEntities,
-					Text.translatable("signfinder.export.all_signs_title")
+                        Component.translatable("signfinder.export.all_signs_title")
 						.getString(),
 					format);
 			return success ? 0 : 1;

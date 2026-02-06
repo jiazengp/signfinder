@@ -12,12 +12,12 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.fabricmc.loader.api.FabricLoader;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
 import net.signfinder.core.SignExportFormat;
 import net.signfinder.models.EntitySearchResult;
 import net.signfinder.models.SignSearchResult;
@@ -65,10 +65,10 @@ public enum ExportUtils
 		if(entityResult.getEntityType() == EntitySearchResult.EntityType.SIGN)
 		{
 			// For signs, use the original sign text
-			if(MinecraftClient.getInstance().player != null)
+			if(Minecraft.getInstance().player != null)
 			{
 				return new SignSearchResult(entityResult.getPos(),
-					MinecraftClient.getInstance().player.getEntityPos(),
+					Minecraft.getInstance().player.position(),
 					entityResult.getSignText(), entityResult.getMatchedText(),
 					DEFAULT_PREVIEW_LENGTH);
 			}
@@ -77,10 +77,10 @@ public enum ExportUtils
 			// For item frames, create minimal text array with item name only
 			String[] itemFrameText = {entityResult.getItemName(), "", "", ""};
 			
-			if(MinecraftClient.getInstance().player != null)
+			if(Minecraft.getInstance().player != null)
 			{
 				return new SignSearchResult(entityResult.getPos(),
-					MinecraftClient.getInstance().player.getEntityPos(),
+					Minecraft.getInstance().player.position(),
 					itemFrameText, entityResult.getMatchedText(),
 					DEFAULT_PREVIEW_LENGTH);
 			}
@@ -91,14 +91,14 @@ public enum ExportUtils
 	public boolean exportSignSearchResult(List<SignSearchResult> results,
 		String searchQuery, SignExportFormat exportFormat)
 	{
-		MinecraftClient mc = MinecraftClient.getInstance();
+		Minecraft mc = Minecraft.getInstance();
 		if(mc.player == null)
 			return false;
 		
 		if(results.isEmpty())
 		{
-			mc.player.sendMessage(
-				Text.translatable("signfinder.export.no_results"), false);
+			mc.player.displayClientMessage(
+				Component.translatable("signfinder.export.no_results"), false);
 			return false;
 		}
 		
@@ -121,8 +121,8 @@ public enum ExportUtils
 			return true;
 		}catch(Exception e)
 		{
-			mc.player.sendMessage(
-				Text.translatable("signfinder.export.error", e.getMessage()),
+			mc.player.displayClientMessage(
+				Component.translatable("signfinder.export.error", e.getMessage()),
 				false);
 			return false;
 		}
@@ -189,10 +189,12 @@ public enum ExportUtils
 		String fileName = EXPORT_FILE_PREFIX + timestamp
 			+ (format.isJsonFormat() ? ".json" : ".txt");
 		
-		MinecraftClient mc = MinecraftClient.getInstance();
-		String worldName = mc.world != null
-			? mc.world.getRegistryKey().getValue().toString() : "Unknown";
-		String query = searchQuery != null ? searchQuery : "All Signs";
+		Minecraft mc = Minecraft.getInstance();
+        String worldName = mc.level != null
+                ? mc.level.dimension().identifier().toString()
+                : "Unknown";
+
+        String query = searchQuery != null ? searchQuery : "All Signs";
 		
 		return new ExportContext(query, worldName, timestamp, fileName,
 			formattedExportTime);
@@ -258,29 +260,29 @@ public enum ExportUtils
 			result.getMatchedText() != null ? result.getMatchedText() : "");
 	}
 	
-	private static void sendExportSuccessMessages(MinecraftClient mc,
+	private static void sendExportSuccessMessages(Minecraft mc,
 		int resultCount, String fileName, Path filePath)
 	{
 		// Success message with count and filename
-		Objects.requireNonNull(mc.player).sendMessage(Text.translatable(
+		Objects.requireNonNull(mc.player).displayClientMessage(Component.translatable(
 			"signfinder.export.success", resultCount, fileName), false);
 		
 		// Clickable file path message
-		MutableText fileLocationMessage =
-			Text.translatable("signfinder.export.file_location_prefix")
+        MutableComponent fileLocationMessage =
+			Component.translatable("signfinder.export.file_location_prefix")
 				.append(createClickableFilePath(filePath));
-		mc.player.sendMessage(fileLocationMessage, false);
+		mc.player.displayClientMessage(fileLocationMessage, false);
 	}
 	
-	private static MutableText createClickableFilePath(Path filePath)
+	private static MutableComponent createClickableFilePath(Path filePath)
 	{
 		String pathString = filePath.toString();
 		
-		return Text.literal(pathString)
-			.styled(style -> style.withColor(Formatting.AQUA)
-				.withUnderline(true)
+		return Component.literal(pathString)
+			.withStyle(style -> style.withColor(ChatFormatting.AQUA)
+                    .withUnderlined(true)
 				.withHoverEvent(new HoverEvent.ShowText(
-					Text.translatable("signfinder.tooltip.click_to_open_file")))
+					Component.translatable("signfinder.tooltip.click_to_open_file")))
 				.withClickEvent(new ClickEvent.OpenFile(pathString)));
 	}
 }

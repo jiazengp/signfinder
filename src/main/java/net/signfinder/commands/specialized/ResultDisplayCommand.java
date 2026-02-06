@@ -1,9 +1,9 @@
 package net.signfinder.commands.specialized;
 
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.signfinder.core.SignExportFormat;
 import net.signfinder.models.EntitySearchResult;
 import net.signfinder.SignFinderConfig;
@@ -42,31 +42,31 @@ public class ResultDisplayCommand
 		int endIndex = indices[1];
 		
 		source.sendFeedback(
-			Text.translatable("signfinder.message.search_results_title",
-				results.size(), searchRadius).formatted(Formatting.YELLOW));
+			Component.translatable("signfinder.message.search_results_title",
+				results.size(), searchRadius).withStyle(ChatFormatting.YELLOW));
 		source.sendFeedback(
-			Text.translatable("signfinder.message.page_info", page, totalPages)
-				.formatted(Formatting.GRAY));
+                Component.translatable("signfinder.message.page_info", page, totalPages)
+				.withStyle(ChatFormatting.GRAY));
 		
 		// 显示结果
 		for(int i = startIndex; i < endIndex; i++)
 		{
-			MutableText text = textCreator.createText(results.get(i), i + 1);
+			MutableComponent text = textCreator.createText(results.get(i), i + 1);
 			source.sendFeedback(text);
 		}
 		
 		if(totalPages > 1)
 		{
-			MutableText pageControl =
+			MutableComponent pageControl =
 				CommandUtils.createPaginationControls(page, totalPages);
 			source.sendFeedback(pageControl);
 		}
 		
 		if(totalPages > 3)
 		{
-			MutableText exportReminder = Text
+			MutableComponent exportReminder = Component
 				.translatable("signfinder.message.export_reminder")
-				.formatted(Formatting.GOLD).append(" ")
+				.withStyle(ChatFormatting.GOLD).append(" ")
 				.append(CommandUtils.createExportButton(SignExportFormat.JSON))
 				.append(" ")
 				.append(CommandUtils.createExportButton(SignExportFormat.TEXT));
@@ -77,14 +77,14 @@ public class ResultDisplayCommand
 	@FunctionalInterface
 	private interface ResultTextCreator<T>
 	{
-		MutableText createText(T result, int index);
+		MutableComponent createText(T result, int index);
 	}
 	
 	private static void displayEmptyResults(FabricClientCommandSource source,
 		int searchRadius)
 	{
-		source.sendFeedback(Text
+		source.sendFeedback(Component
 			.translatable("signfinder.message.no_matching_signs", searchRadius)
-			.formatted(Formatting.YELLOW));
+			.withStyle(ChatFormatting.YELLOW));
 	}
 }

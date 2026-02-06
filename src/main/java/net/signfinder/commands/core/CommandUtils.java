@@ -1,11 +1,11 @@
 package net.signfinder.commands.core;
 
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
 import net.signfinder.core.SignExportFormat;
 import net.signfinder.models.EntitySearchResult;
 
@@ -152,8 +152,8 @@ public class CommandUtils
 		currentPageCache.put(playerKey, page);
 	}
 	
-	public static MutableText createEntityResultText(EntitySearchResult result,
-		int index)
+	public static MutableComponent createEntityResultText(EntitySearchResult result,
+                                                   int index)
 	{
 		String fullText =
 			result.getEntityType() == EntitySearchResult.EntityType.SIGN
@@ -163,157 +163,200 @@ public class CommandUtils
 		return createGenericResultText(result.getFormattedResult(index),
 			result.getPos(), fullText, result.isLocalData());
 	}
-	
-	private static MutableText createGenericResultText(Text formattedResult,
-		BlockPos pos, String fullText, boolean isLocalData)
-	{
-		MutableText text = (MutableText)formattedResult;
-		
-		text.styled(style -> style
-			.withHoverEvent(new HoverEvent.ShowText(Text
-				.translatable("signfinder.tooltip.target_coords", pos.getX(),
-					pos.getY(), pos.getZ())
-				.append("\n")
-				.append(Text.translatable("signfinder.tooltip.full_text"))
-				.append("\n" + fullText).append("\n")
-				.append(Text.translatable("signfinder.tooltip.click_to_copy"))))
-			.withClickEvent(new ClickEvent.CopyToClipboard(
-				pos.getX() + "," + pos.getY() + "," + pos.getZ())));
-		
-		if(!isLocalData)
-		{
-			text.append(" ");
-			
-			text.append(Text.translatable("signfinder.button.remove_highlight")
-				.styled(style -> style.withColor(Formatting.RED)
-					.withHoverEvent(new HoverEvent.ShowText(Text
-						.translatable("signfinder.tooltip.remove_highlight")))
-					.withClickEvent(new ClickEvent.RunCommand(
-						CommandConstants.COMMAND_PREFIX + " "
-							+ CommandConstants.SUBCOMMAND_REMOVE + " "
-							+ pos.getX() + " " + pos.getY() + " "
-							+ pos.getZ()))));
-			
-			text.append(" ");
-			
-			text.append(Text.translatable("signfinder.button.mark")
-				.styled(style -> style.withColor(Formatting.GREEN)
-					.withHoverEvent(new HoverEvent.ShowText(
-						Text.translatable("signfinder.tooltip.change_color")))
-					.withClickEvent(new ClickEvent.RunCommand(
-						CommandConstants.COMMAND_PREFIX + " "
-							+ CommandConstants.SUBCOMMAND_COLOR + " "
-							+ pos.getX() + " " + pos.getY() + " "
-							+ pos.getZ()))));
-		}
-		
-		return text;
-	}
-	
-	public static MutableText createPaginationControls(int currentPage,
-		int totalPages)
-	{
-		MutableText pageControl = Text.literal("");
-		
-		if(currentPage > 1)
-		{
-			pageControl
-				.append(Text.translatable("signfinder.button.previous_page")
-					.styled(style -> style.withColor(Formatting.GREEN)
-						.withClickEvent(new ClickEvent.RunCommand(
-							CommandConstants.COMMAND_PREFIX + " "
-								+ CommandConstants.SUBCOMMAND_PAGE + " "
-								+ (currentPage - 1)))));
-		}
-		
-		if(currentPage < totalPages)
-		{
-			pageControl.append(Text.translatable("signfinder.button.next_page")
-				.styled(style -> style.withColor(Formatting.GREEN)
-					.withClickEvent(new ClickEvent.RunCommand(
-						CommandConstants.COMMAND_PREFIX + " "
-							+ CommandConstants.SUBCOMMAND_PAGE + " "
-							+ (currentPage + 1)))));
-		}
-		
-		// Add clickable page numbers
-		if(totalPages > 1)
-		{
-			pageControl
-				.append(createPageNumberControls(currentPage, totalPages));
-		}
-		
-		return pageControl;
-	}
-	
-	private static MutableText createPageNumberControls(int currentPage,
-		int totalPages)
-	{
-		MutableText pageNumbers = Text.literal(" (");
-		
-		// Calculate page range to display
-		int[] pageRange = calculatePageRange(currentPage, totalPages);
-		int startPage = pageRange[0];
-		int endPage = pageRange[1];
-		
-		// Add ellipsis at the beginning if we're not showing from page 1
-		if(startPage > 1)
-		{
-			pageNumbers.append(createClickablePageNumber(1, currentPage));
-			if(startPage > 2)
-			{
-				pageNumbers.append(Text.literal(", ..."));
-			}
-			pageNumbers.append(Text.literal(", "));
-		}
-		
-		// Add page numbers in range
-		for(int page = startPage; page <= endPage; page++)
-		{
-			if(page > startPage)
-			{
-				pageNumbers.append(Text.literal(", "));
-			}
-			
-			if(page == currentPage)
-			{
-				// Current page - highlighted, no click
-				pageNumbers.append(Text.literal(String.valueOf(page))
-					.styled(style -> style.withColor(Formatting.DARK_AQUA)));
-			}else
-			{
-				pageNumbers
-					.append(createClickablePageNumber(page, currentPage));
-			}
-		}
-		
-		// Add ellipsis at the end if we're not showing to the last page
-		if(endPage < totalPages)
-		{
-			if(endPage < totalPages - 1)
-			{
-				pageNumbers.append(Text.literal(", ..."));
-			}
-			pageNumbers.append(Text.literal(", "));
-			pageNumbers
-				.append(createClickablePageNumber(totalPages, currentPage));
-		}
-		
-		pageNumbers.append(Text.literal(")"));
-		return pageNumbers;
-	}
-	
-	private static MutableText createClickablePageNumber(int page,
-		int currentPage)
-	{
-		return Text.literal(String.valueOf(page)).styled(style -> style
-			.withColor(Formatting.AQUA)
-			.withHoverEvent(new HoverEvent.ShowText(
-				Text.translatable("signfinder.tooltip.goto_page", page)))
-			.withClickEvent(
-				new ClickEvent.RunCommand(CommandConstants.COMMAND_PREFIX + " "
-					+ CommandConstants.SUBCOMMAND_PAGE + " " + page)));
-	}
+
+    private static MutableComponent createGenericResultText(
+                Component formattedResult,
+                BlockPos pos,
+                String fullText,
+                boolean isLocalData
+        ) {
+            MutableComponent text = formattedResult.copy();
+
+            text.withStyle(style -> style
+                    .withHoverEvent(new HoverEvent.ShowText(
+                            Component.translatable(
+                                            "signfinder.tooltip.target_coords",
+                                            pos.getX(), pos.getY(), pos.getZ()
+                                    )
+                                    .append("\n")
+                                    .append(Component.translatable("signfinder.tooltip.full_text"))
+                                    .append("\n")
+                                    .append(Component.literal(fullText))
+                                    .append("\n")
+                                    .append(Component.translatable("signfinder.tooltip.click_to_copy"))
+                    ))
+                    .withClickEvent(new ClickEvent.CopyToClipboard(
+                            pos.getX() + "," + pos.getY() + "," + pos.getZ()
+                    ))
+            );
+
+            if (!isLocalData) {
+                text.append(" ");
+
+                text.append(
+                        Component.translatable("signfinder.button.remove_highlight")
+                                .copy()
+                                .withStyle(style -> style
+                                        .withColor(ChatFormatting.RED)
+                                        .withHoverEvent(new HoverEvent.ShowText(
+                                                Component.translatable(
+                                                        "signfinder.tooltip.remove_highlight"
+                                                )
+                                        ))
+                                        .withClickEvent(new ClickEvent.RunCommand(
+                                                CommandConstants.COMMAND_PREFIX + " "
+                                                        + CommandConstants.SUBCOMMAND_REMOVE + " "
+                                                        + pos.getX() + " " + pos.getY() + " " + pos.getZ()
+                                        ))
+                                )
+                );
+
+                text.append(" ");
+
+                text.append(
+                        Component.translatable("signfinder.button.mark")
+                                .copy()
+                                .withStyle(style -> style
+                                        .withColor(ChatFormatting.GREEN)
+                                        .withHoverEvent(new HoverEvent.ShowText(
+                                                Component.translatable(
+                                                        "signfinder.tooltip.change_color"
+                                                )
+                                        ))
+                                        .withClickEvent(new ClickEvent.RunCommand(
+                                                CommandConstants.COMMAND_PREFIX + " "
+                                                        + CommandConstants.SUBCOMMAND_COLOR + " "
+                                                        + pos.getX() + " " + pos.getY() + " " + pos.getZ()
+                                        ))
+                                )
+                );
+            }
+
+            return text;
+        }
+
+    public static MutableComponent createPaginationControls(int currentPage, int totalPages)
+    {
+        MutableComponent pageControl = Component.empty();
+
+        if (currentPage > 1)
+        {
+            pageControl.append(
+                    Component.translatable("signfinder.button.previous_page")
+                            .copy()
+                            .withStyle(style -> style
+                                    .withColor(ChatFormatting.GREEN)
+                                    .withClickEvent(new ClickEvent.RunCommand(
+                                            CommandConstants.COMMAND_PREFIX + " "
+                                                    + CommandConstants.SUBCOMMAND_PAGE + " "
+                                                    + (currentPage - 1)
+                                    ))
+                            )
+            );
+        }
+
+        if (currentPage < totalPages)
+        {
+            pageControl.append(
+                    Component.translatable("signfinder.button.next_page")
+                            .copy()
+                            .withStyle(style -> style
+                                    .withColor(ChatFormatting.GREEN)
+                                    .withClickEvent(new ClickEvent.RunCommand(
+                                            CommandConstants.COMMAND_PREFIX + " "
+                                                    + CommandConstants.SUBCOMMAND_PAGE + " "
+                                                    + (currentPage + 1)
+                                    ))
+                            )
+            );
+        }
+
+        if (totalPages > 1)
+        {
+            pageControl.append(
+                    createPageNumberControls(currentPage, totalPages)
+            );
+        }
+
+        return pageControl;
+    }
+
+
+    private static Component createPageNumberControls(
+            int currentPage,
+            int totalPages
+    ) {
+        MutableComponent pageNumbers = Component.literal(" (");
+
+        // Calculate page range to display
+        int[] pageRange = calculatePageRange(currentPage, totalPages);
+        int startPage = pageRange[0];
+        int endPage = pageRange[1];
+
+        // Ellipsis at beginning
+        if (startPage > 1) {
+            pageNumbers.append(createClickablePageNumber(1, currentPage));
+            if (startPage > 2) {
+                pageNumbers.append(Component.literal(", ..."));
+            }
+            pageNumbers.append(Component.literal(", "));
+        }
+
+        // Page numbers in range
+        for (int page = startPage; page <= endPage; page++) {
+            if (page > startPage) {
+                pageNumbers.append(Component.literal(", "));
+            }
+
+            if (page == currentPage) {
+                // current page (highlighted, not clickable)
+                pageNumbers.append(
+                        Component.literal(String.valueOf(page))
+                                .copy()
+                                .withStyle(style ->
+                                        style.withColor(ChatFormatting.DARK_AQUA)
+                                )
+                );
+            } else {
+                pageNumbers.append(
+                        createClickablePageNumber(page, currentPage)
+                );
+            }
+        }
+
+        // Ellipsis at end
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                pageNumbers.append(Component.literal(", ..."));
+            }
+            pageNumbers.append(Component.literal(", "));
+            pageNumbers.append(
+                    createClickablePageNumber(totalPages, currentPage)
+            );
+        }
+
+        pageNumbers.append(Component.literal(")"));
+        return pageNumbers;
+    }
+
+    private static Component createClickablePageNumber(int page, int currentPage)
+    {
+        return Component.literal(String.valueOf(page))
+                .copy()
+                .withStyle(style -> style
+                        .withColor(ChatFormatting.AQUA)
+                        .withHoverEvent(new HoverEvent.ShowText(
+                                Component.translatable(
+                                        "signfinder.tooltip.goto_page",
+                                        page
+                                )
+                        ))
+                        .withClickEvent(new ClickEvent.RunCommand(
+                                CommandConstants.COMMAND_PREFIX + " "
+                                        + CommandConstants.SUBCOMMAND_PAGE + " " + page
+                        ))
+                );
+    }
 	
 	private static int[] calculatePageRange(int currentPage, int totalPages)
 	{
@@ -356,19 +399,24 @@ public class CommandUtils
 		int endIndex = Math.min(startIndex + maxResultsPerPage, totalResults);
 		return new int[]{startIndex, endIndex};
 	}
-	
-	public static MutableText createExportButton(
-		SignExportFormat signExportFormat)
-	{
-		return Text
-			.translatable("signfinder.button.export",
-				Text.translatable(signExportFormat.toString()))
-			.styled(style -> style.withColor(Formatting.BLUE)
-				.withHoverEvent(new HoverEvent.ShowText(
-					Text.translatable("signfinder.tooltip.export")))
-				.withClickEvent(
-					new ClickEvent.RunCommand(CommandConstants.COMMAND_PREFIX
-						+ " " + CommandConstants.SUBCOMMAND_EXPORT + " "
-						+ signExportFormat.name())));
-	}
+
+    public static Component createExportButton(SignExportFormat signExportFormat)
+    {
+        return Component.translatable(
+                        "signfinder.button.export",
+                        Component.translatable(signExportFormat.toString())
+                )
+                .withStyle(style -> style
+                        .withColor(ChatFormatting.BLUE)
+                        .withHoverEvent(new HoverEvent.ShowText(
+                                Component.translatable("signfinder.tooltip.export")
+                        ))
+                        .withClickEvent(new ClickEvent.RunCommand(
+                                CommandConstants.COMMAND_PREFIX + " "
+                                        + CommandConstants.SUBCOMMAND_EXPORT + " "
+                                        + signExportFormat.name()
+                        ))
+                );
+    }
+
 }
