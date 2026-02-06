@@ -4,12 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import net.minecraft.block.entity.SignBlockEntity;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.decoration.ItemFrameEntity;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.decoration.ItemFrame;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.phys.Vec3;
 import net.signfinder.models.EntitySearchResult;
 import net.signfinder.SignFinderConfig;
 import net.signfinder.SignFinderMod;
@@ -19,10 +20,10 @@ import net.signfinder.util.SignTextUtils;
 
 public class SearchResultManager
 {
-	private static final MinecraftClient MC = MinecraftClient.getInstance();
+	private static final Minecraft MC = Minecraft.getInstance();
 	
 	private final List<SignBlockEntity> searchResultSigns = new ArrayList<>();
-	private final List<ItemFrameEntity> searchResultItemFrames =
+	private final List<ItemFrame> searchResultItemFrames =
 		new ArrayList<>();
 	private final EntityDetectionManager detectionManager;
 	
@@ -35,12 +36,12 @@ public class SearchResultManager
 	{
 		searchResultSigns.clear();
 		searchResultItemFrames.clear();
-		if(MC.world == null)
+		if(MC.level == null)
 			return;
 		
 		// Update ItemFrame position index to ensure search results can be found
 		detectionManager.updateItemFrameIndex();
-		Map<BlockPos, ItemFrameEntity> itemFrameIndex =
+		Map<BlockPos, ItemFrame> itemFrameIndex =
 			detectionManager.getItemFramePositionIndex();
 		
 		for(EntitySearchResult result : results)
@@ -62,7 +63,7 @@ public class SearchResultManager
 	
 	private void processSignResult(EntitySearchResult result)
 	{
-		if(MC.world.getBlockEntity(
+		if(MC.level.getBlockEntity(
 			result.getPos()) instanceof SignBlockEntity signEntity)
 		{
 			if(isSignResultStillValid(signEntity, result))
@@ -83,9 +84,9 @@ public class SearchResultManager
 	}
 	
 	private void processItemFrameResult(EntitySearchResult result,
-		Map<BlockPos, ItemFrameEntity> itemFrameIndex)
+		Map<BlockPos, ItemFrame> itemFrameIndex)
 	{
-		ItemFrameEntity itemFrame = itemFrameIndex.get(result.getPos());
+		ItemFrame itemFrame = itemFrameIndex.get(result.getPos());
 		if(itemFrame != null && !itemFrame.isRemoved())
 		{
 			searchResultItemFrames.add(itemFrame);
@@ -94,13 +95,19 @@ public class SearchResultManager
 			SignFinderMod.LOGGER.debug(
 				"Item frame at {} no longer exists or was removed, skipping highlight. Index size: {}",
 				result.getPos(), itemFrameIndex.size());
-			
-			// Try direct lookup for fallback
-			boolean foundBySearch = ChunkUtils.getLoadedEntities()
-				.anyMatch(entity -> entity instanceof ItemFrameEntity frame
-					&& frame.getBlockPos().equals(result.getPos())
-					&& ItemFrameUtils.hasItem(frame));
-			if(foundBySearch)
+            boolean foundBySearch = false;
+
+            // Try direct lookup for fallback
+            for (Entity entity : ChunkUtils.getLoadedEntities()) {
+                if(entity instanceof ItemFrame frame
+                        && frame.blockPosition().equals(result.getPos())
+                        && ItemFrameUtils.hasItem(frame)
+                ) {
+                    foundBySearch = true;
+                }
+            }
+
+            if(foundBySearch)
 			{
 				SignFinderMod.LOGGER.warn(
 					"Item frame exists but not in index - possible timing issue");
@@ -141,7 +148,7 @@ public class SearchResultManager
 		if(searchResultSigns.isEmpty() && searchResultItemFrames.isEmpty())
 			return;
 		
-		Vec3d playerPos = MC.player.getEntityPos();
+		Vec3 playerPos = MC.player.position();
 		double removeDistanceSq =
 			config.auto_removal_distance * config.auto_removal_distance;
 		boolean shouldPlaySound;
@@ -158,22 +165,22 @@ public class SearchResultManager
 		
 		if(shouldPlaySound && MC.player != null)
 		{
-			MC.player.playSound(SoundEvents.BLOCK_NOTE_BLOCK_CHIME.value(),
+			MC.player.playSound(SoundEvents.NOTE_BLOCK_CHIME.value(),
 				0.5f, 2.0f);
 		}
 	}
 	
-	private boolean clearAllIfPlayerNearAny(Vec3d playerPos,
+	private boolean clearAllIfPlayerNearAny(Vec3 playerPos,
 		double removeDistanceSq)
 	{
 		boolean playerNearAnyEntity =
 			searchResultSigns.stream().anyMatch(sign -> {
-				Vec3d signPos = Vec3d.ofCenter(sign.getPos());
-				double distanceSq = playerPos.squaredDistanceTo(signPos);
+				Vec3 signPos = Vec3.atCenterOf(sign.getBlockPos());
+				double distanceSq = playerPos.distanceToSqr(signPos);
 				return distanceSq <= removeDistanceSq;
 			}) || searchResultItemFrames.stream().anyMatch(itemFrame -> {
-				Vec3d itemFramePos = itemFrame.getEntityPos();
-				double distanceSq = playerPos.squaredDistanceTo(itemFramePos);
+				Vec3 itemFramePos = Vec3.atLowerCornerOf(itemFrame.getPos());
+				double distanceSq = playerPos.distanceToSqr(itemFramePos);
 				return distanceSq <= removeDistanceSq;
 			});
 		
@@ -187,21 +194,21 @@ public class SearchResultManager
 		return false;
 	}
 	
-	private boolean removeIndividualNearbyResults(Vec3d playerPos,
+	private boolean removeIndividualNearbyResults(Vec3 playerPos,
 		double removeDistanceSq)
 	{
 		int beforeSignSize = searchResultSigns.size();
 		int beforeItemFrameSize = searchResultItemFrames.size();
 		
 		searchResultSigns.removeIf(sign -> {
-			Vec3d signPos = Vec3d.ofCenter(sign.getPos());
-			double distanceSq = playerPos.squaredDistanceTo(signPos);
+			Vec3 signPos = Vec3.atCenterOf(sign.getBlockPos());
+			double distanceSq = playerPos.distanceToSqr(signPos);
 			return distanceSq <= removeDistanceSq;
 		});
 		
 		searchResultItemFrames.removeIf(itemFrame -> {
-			Vec3d itemFramePos = itemFrame.getEntityPos();
-			double distanceSq = playerPos.squaredDistanceTo(itemFramePos);
+			Vec3 itemFramePos = Vec3.atLowerCornerOf(itemFrame.getPos());
+			double distanceSq = playerPos.distanceToSqr(itemFramePos);
 			return distanceSq <= removeDistanceSq;
 		});
 		
@@ -221,18 +228,18 @@ public class SearchResultManager
 	{
 		BlockPos targetPos = new BlockPos(x, y, z);
 		boolean signRemoved =
-			searchResultSigns.removeIf(sign -> sign.getPos().equals(targetPos));
+			searchResultSigns.removeIf(sign -> sign.getBlockPos().equals(targetPos));
 		boolean itemFrameRemoved = searchResultItemFrames
-			.removeIf(itemFrame -> itemFrame.getBlockPos().equals(targetPos));
+			.removeIf(itemFrame -> itemFrame.getPos().equals(targetPos));
 		return signRemoved || itemFrameRemoved;
 	}
 	
 	public boolean hasResultAtPos(BlockPos pos)
 	{
 		boolean hasSign = searchResultSigns.stream()
-			.anyMatch(sign -> sign.getPos().equals(pos));
+			.anyMatch(sign -> sign.getBlockPos().equals(pos));
 		boolean hasItemFrame = searchResultItemFrames.stream()
-			.anyMatch(itemFrame -> itemFrame.getBlockPos().equals(pos));
+			.anyMatch(itemFrame -> itemFrame.getPos().equals(pos));
 		return hasSign || hasItemFrame;
 	}
 	
@@ -242,7 +249,7 @@ public class SearchResultManager
 		return searchResultSigns;
 	}
 	
-	public List<ItemFrameEntity> getSearchResultItemFrames()
+	public List<ItemFrame> getSearchResultItemFrames()
 	{
 		return searchResultItemFrames;
 	}

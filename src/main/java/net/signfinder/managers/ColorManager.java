@@ -3,7 +3,7 @@ package net.signfinder.managers;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 import net.signfinder.SignFinderMod;
 
 public class ColorManager

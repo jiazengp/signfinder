@@ -2,12 +2,12 @@ package net.signfinder.detection;
 
 import java.util.List;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.signfinder.SignFinderConfig;
 import net.signfinder.models.SignSearchResult;
 import net.signfinder.cache.LocalDataCacheManager;
@@ -22,12 +22,12 @@ public class AutoDetectionCacheService
 		LoggerFactory.getLogger(AutoDetectionCacheService.class);
 	
 	private final LocalDataCacheManager localDataManager;
-	private final MinecraftClient mc;
+	private final Minecraft mc;
 	
 	public AutoDetectionCacheService(LocalDataCacheManager localDataManager)
 	{
 		this.localDataManager = localDataManager;
-		this.mc = MinecraftClient.getInstance();
+		this.mc = Minecraft.getInstance();
 	}
 	
 	/**
@@ -94,7 +94,7 @@ public class AutoDetectionCacheService
 			return;
 		}
 		
-		Vec3d playerPos = mc.player.getEntityPos();
+		Vec3 playerPos = mc.player.position();
 		double removalDistanceSq =
 			config.auto_removal_distance * config.auto_removal_distance;
 		
@@ -103,7 +103,7 @@ public class AutoDetectionCacheService
 		for(SignSearchResult result : localData)
 		{
 			BlockPos pos = result.getPos();
-			double distanceSq = pos.getSquaredDistance(playerPos);
+			double distanceSq = pos.distToCenterSqr(playerPos);
 			
 			if(distanceSq <= removalDistanceSq)
 			{

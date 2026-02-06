@@ -3,8 +3,9 @@ package net.signfinder.commands.specialized;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.signfinder.models.EntitySearchResult;
 import net.signfinder.SignFinderConfig;
 import net.signfinder.SignFinderMod;
@@ -27,8 +28,8 @@ public class PageCommand extends BaseCommand
 		if(entityResults == null || entityResults.isEmpty())
 		{
 			ctx.getSource().sendFeedback(
-				Text.translatable("signfinder.error.no_search_results")
-					.formatted(Formatting.RED));
+				Component.translatable("signfinder.error.no_search_results")
+					.withStyle(ChatFormatting.RED));
 			return 0;
 		}
 		
@@ -58,8 +59,8 @@ public class PageCommand extends BaseCommand
 		if(entityResults == null || entityResults.isEmpty())
 		{
 			ctx.getSource().sendFeedback(
-				Text.translatable("signfinder.error.no_search_results")
-					.formatted(Formatting.RED));
+				Component.translatable("signfinder.error.no_search_results")
+					.withStyle(ChatFormatting.RED));
 			return 0;
 		}
 		

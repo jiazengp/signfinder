@@ -8,7 +8,9 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
+import net.minecraft.client.Minecraft;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +19,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.MinecraftClient;
 import net.signfinder.SignFinderConfig;
 import net.signfinder.SignFinderMod;
 import net.signfinder.core.AutoSaveMode;
@@ -47,20 +48,13 @@ public class FileOperationService implements DataPersistenceService
 	 */
 	private Path getAutoSaveDir()
 	{
-		MinecraftClient client = MinecraftClient.getInstance();
+		Minecraft client = Minecraft.getInstance();
 		Path gameDir = FabricLoader.getInstance().getGameDir();
-		
+
 		// Try to get current world name
-		String worldName = getCurrentWorldName(client);
-		if(worldName == null)
-		{
-			// Fallback to global saves if no world is loaded
-			LOGGER.warn("No world loaded, using global autosave directory");
-			return gameDir.resolve("saves").resolve("_global")
-				.resolve("signfinder").resolve("autosave");
-		}
-		
-		// Use world-specific directory: saves/[world_name]/signfinder/autosave/
+		String worldName = client.name();
+
+        // Use world-specific directory: saves/[world_name]/signfinder/autosave/
 		Path autoSaveDir = gameDir.resolve("saves").resolve(worldName)
 			.resolve("signfinder").resolve("autosave");
 		
@@ -75,39 +69,8 @@ public class FileOperationService implements DataPersistenceService
 		
 		return autoSaveDir;
 	}
-	
-	/**
-	 * Gets the current world/save name.
-	 */
-	private String getCurrentWorldName(MinecraftClient client)
-	{
-		try
-		{
-			if(client.getServer() != null
-				&& client.getServer().getSaveProperties() != null)
-			{
-				// Single player world
-				return client.getServer().getSaveProperties().getLevelName();
-			}else if(client.getCurrentServerEntry() != null)
-			{
-				// Multiplayer server - use server address as identifier
-				String serverName = client.getCurrentServerEntry().address;
-				// Sanitize server name for file system
-				return sanitizeFileName(serverName);
-			}else if(client.isInSingleplayer() && client.world != null)
-			{
-				// Try to get world name from level storage
-				return "singleplayer_world";
-			}
-		}catch(Exception e)
-		{
-			LOGGER.debug("Error getting world name: {}", e.getMessage());
-		}
-		
-		return null;
-	}
-	
-	/**
+
+    /**
 	 * Sanitizes a string to be safe for use as a filename.
 	 */
 	private String sanitizeFileName(String name)

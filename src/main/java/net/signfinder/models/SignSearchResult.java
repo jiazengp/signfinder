@@ -1,8 +1,8 @@
 package net.signfinder.models;
 
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
 public class SignSearchResult
@@ -16,11 +16,11 @@ public class SignSearchResult
 	private final String preview;
 	private final long updateTime;
 	
-	public SignSearchResult(BlockPos pos, Vec3d playerPos, String[] signText,
-		String matchedText, int previewLength)
+	public SignSearchResult(BlockPos pos, Vec3 playerPos, String[] signText,
+                            String matchedText, int previewLength)
 	{
 		this.pos = pos;
-		this.distance = Math.sqrt(pos.getSquaredDistance(playerPos));
+		this.distance = Math.sqrt(pos.distToCenterSqr(playerPos));
 		this.signText = signText;
 		this.combinedText = String.join(" ", signText); // 缓存组合文本
 		this.combinedTextLower = combinedText.toLowerCase(); // 缓存小写版本
@@ -29,11 +29,11 @@ public class SignSearchResult
 		this.updateTime = System.currentTimeMillis();
 	}
 	
-	public SignSearchResult(BlockPos pos, Vec3d playerPos, String[] signText,
-		String matchedText, int previewLength, long updateTime)
+	public SignSearchResult(BlockPos pos, Vec3 playerPos, String[] signText,
+                            String matchedText, int previewLength, long updateTime)
 	{
 		this.pos = pos;
-		this.distance = Math.sqrt(pos.getSquaredDistance(playerPos));
+		this.distance = Math.sqrt(pos.distToCenterSqr(playerPos));
 		this.signText = signText;
 		this.combinedText = String.join(" ", signText); // 缓存组合文本
 		this.combinedTextLower = combinedText.toLowerCase(); // 缓存小写版本
@@ -111,13 +111,7 @@ public class SignSearchResult
 	{
 		return updateTime;
 	}
-	
-	public Text getFormattedResult(int index)
-	{
-		return Text.literal(String.format("%d. [%.1fm] %s - %s", index,
-			distance, formatPosition(), preview));
-	}
-	
+
 	private String formatPosition()
 	{
 		return String.format("(%d, %d, %d)", pos.getX(), pos.getY(),

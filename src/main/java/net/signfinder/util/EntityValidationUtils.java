@@ -1,12 +1,14 @@
 package net.signfinder.util;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+
 import net.signfinder.SignFinderConfig;
 import net.signfinder.SignFinderMod;
 import net.signfinder.models.SignSearchResult;
@@ -26,10 +28,10 @@ public enum EntityValidationUtils
 	 * Validates a sign entity against cached data.
 	 * Checks if the sign still exists and if its content has changed.
 	 */
-	public static ValidationResult validateSignEntity(World world, BlockPos pos,
-		SignSearchResult cached)
+	public static ValidationResult validateSignEntity(Level world, BlockPos pos,
+                                                      SignSearchResult cached)
 	{
-		MinecraftClient client = MinecraftClient.getInstance();
+		Minecraft client = Minecraft.getInstance();
 		if(client.player == null)
 		{
 			return new ValidationResult(ValidationStatus.VALID, null);
@@ -37,7 +39,7 @@ public enum EntityValidationUtils
 		
 		SignFinderConfig config = SignFinderMod.getInstance().getConfig();
 		double distance =
-			Math.sqrt(pos.getSquaredDistance(client.player.getEntityPos()));
+			Math.sqrt(pos.distToCenterSqr(client.player.position()));
 		boolean inRange = distance <= config.default_search_radius;
 		
 		try
@@ -87,7 +89,7 @@ public enum EntityValidationUtils
 			{
 				// Text has changed, create updated result
 				SignSearchResult updatedResult = new SignSearchResult(pos,
-					client.player.getEntityPos(), currentText,
+					client.player.position(), currentText,
 					String.join(" ", currentText), config.text_preview_length);
 				LOGGER.debug("Sign text changed at position: {}", pos);
 				return new ValidationResult(ValidationStatus.MODIFIED,
@@ -104,7 +106,7 @@ public enum EntityValidationUtils
 	/**
 	 * Checks if a sign block still exists at the given position.
 	 */
-	public static boolean isSignStillValid(World world, BlockPos pos)
+	public static boolean isSignStillValid(Level world, BlockPos pos)
 	{
 		try
 		{
@@ -121,8 +123,8 @@ public enum EntityValidationUtils
 	/**
 	 * Validates if an entity is within search range.
 	 */
-	public static boolean isInSearchRange(Vec3d entityPos, Vec3d playerPos,
-		double radius)
+	public static boolean isInSearchRange(Vec3 entityPos, Vec3 playerPos,
+                                          double radius)
 	{
 		double distance = entityPos.distanceTo(playerPos);
 		return distance <= radius;
@@ -132,10 +134,10 @@ public enum EntityValidationUtils
 	 * Validates if a position is within the specified radius from a center
 	 * point.
 	 */
-	public static boolean isWithinRadius(BlockPos pos, Vec3d center,
+	public static boolean isWithinRadius(BlockPos pos, Vec3 center,
 		double radius)
 	{
-		Vec3d posVec = pos.toCenterPos();
+		Vec3 posVec = pos.getCenter();
 		return posVec.distanceTo(center) <= radius;
 	}
 	

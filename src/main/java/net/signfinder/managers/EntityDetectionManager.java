@@ -4,19 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.decoration.ItemFrame;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.minecraft.block.entity.SignBlockEntity;
-import net.minecraft.entity.decoration.ItemFrameEntity;
-import net.minecraft.util.math.BlockPos;
 import net.signfinder.SignFinderConfig;
 import net.signfinder.services.EntityDetectionService;
 import net.signfinder.services.EntityValidationService;
 import net.signfinder.models.SignSearchResult;
 import net.signfinder.util.SignTextUtils;
 import net.signfinder.util.ItemFrameUtils;
-import net.minecraft.client.MinecraftClient;
 
 /**
  * Coordinated entity detection functionality using service-oriented
@@ -30,7 +30,7 @@ public class EntityDetectionManager
 		LoggerFactory.getLogger(EntityDetectionManager.class);
 	
 	private final List<SignBlockEntity> highlightedSigns = new ArrayList<>();
-	private final List<ItemFrameEntity> highlightedItemFrames =
+	private final List<ItemFrame> highlightedItemFrames =
 		new ArrayList<>();
 	
 	private final EntityDetectionService detectionService;
@@ -86,7 +86,7 @@ public class EntityDetectionManager
 	/**
 	 * Get the item frame position index.
 	 */
-	public Map<BlockPos, ItemFrameEntity> getItemFramePositionIndex()
+	public Map<BlockPos, ItemFrame> getItemFramePositionIndex()
 	{
 		return validationService.getAllItemFrames();
 	}
@@ -106,7 +106,7 @@ public class EntityDetectionManager
 		return List.copyOf(highlightedSigns);
 	}
 	
-	public List<ItemFrameEntity> getHighlightedItemFrames()
+	public List<ItemFrame> getHighlightedItemFrames()
 	{
 		return List.copyOf(highlightedItemFrames);
 	}
@@ -142,7 +142,7 @@ public class EntityDetectionManager
 	private void detectItemFrames(SignFinderConfig config)
 	{
 		updateItemFrameIndex();
-		List<ItemFrameEntity> detectedFrames =
+		List<ItemFrame> detectedFrames =
 			detectionService.detectMatchingItemFrames(config);
 		
 		if(config.enable_sign_highlighting && config.auto_highlight_detected)
@@ -160,7 +160,7 @@ public class EntityDetectionManager
 	private void saveDetectedSigns(List<SignBlockEntity> detectedSigns,
 		SignFinderConfig config)
 	{
-		MinecraftClient client = MinecraftClient.getInstance();
+		Minecraft client = Minecraft.getInstance();
 		if(client.player == null)
 			return;
 		
@@ -171,27 +171,27 @@ public class EntityDetectionManager
 				String[] signText = SignTextUtils.getSignTextArray(sign);
 				String matchedText = String.join(" ", signText);
 				
-				SignSearchResult result = new SignSearchResult(sign.getPos(),
-					client.player.getEntityPos(), signText, matchedText,
+				SignSearchResult result = new SignSearchResult(sign.getBlockPos(),
+					client.player.position(), signText, matchedText,
 					config.text_preview_length);
 				
 				AutoSaveManager.INSTANCE.addDetectedSign(result);
 			}catch(Exception e)
 			{
 				LOGGER.warn("Failed to save detected sign at {}: {}",
-					sign.getPos(), e.getMessage());
+					sign.getBlockPos(), e.getMessage());
 			}
 		}
 	}
 	
-	private void saveDetectedItemFrames(List<ItemFrameEntity> detectedFrames,
+	private void saveDetectedItemFrames(List<ItemFrame> detectedFrames,
 		SignFinderConfig config)
 	{
-		MinecraftClient client = MinecraftClient.getInstance();
+		Minecraft client = Minecraft.getInstance();
 		if(client.player == null)
 			return;
 		
-		for(ItemFrameEntity itemFrame : detectedFrames)
+		for(ItemFrame itemFrame : detectedFrames)
 		{
 			try
 			{
@@ -199,14 +199,14 @@ public class EntityDetectionManager
 				String[] itemNameArray = {itemName};
 				
 				SignSearchResult result = new SignSearchResult(
-					itemFrame.getBlockPos(), client.player.getEntityPos(),
+					itemFrame.getPos(), client.player.position(),
 					itemNameArray, itemName, config.text_preview_length);
 				
 				AutoSaveManager.INSTANCE.addDetectedSign(result);
 			}catch(Exception e)
 			{
 				LOGGER.warn("Failed to save detected item frame at {}: {}",
-					itemFrame.getBlockPos(), e.getMessage());
+					itemFrame.getPos(), e.getMessage());
 			}
 		}
 	}

@@ -3,11 +3,11 @@ package net.signfinder.managers;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.minecraft.block.entity.SignBlockEntity;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.decoration.ItemFrameEntity;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.world.entity.decoration.ItemFrame;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.signfinder.core.SignEspStyle;
 import net.signfinder.SignFinderConfig;
 import net.signfinder.SignFinderMod;
@@ -24,11 +24,11 @@ public class HighlightRenderManager
 		this.colorManager = colorManager;
 	}
 	
-	public void renderHighlights(MatrixStack matrixStack, float partialTicks,
-		SignFinderConfig config, List<SignBlockEntity> searchResultSigns,
-		List<ItemFrameEntity> searchResultItemFrames,
-		List<SignBlockEntity> highlightedSigns,
-		List<ItemFrameEntity> highlightedItemFrames)
+	public void renderHighlights(PoseStack PoseStack, float partialTicks,
+                                 SignFinderConfig config, List<SignBlockEntity> searchResultSigns,
+                                 List<ItemFrame> searchResultItemFrames,
+                                 List<SignBlockEntity> highlightedSigns,
+                                 List<ItemFrame> highlightedItemFrames)
 	{
 		if(!config.enable_sign_highlighting)
 			return;
@@ -41,109 +41,109 @@ public class HighlightRenderManager
 				searchResultSigns.size(), highlightedSigns.size(),
 				searchResultItemFrames.size(), highlightedItemFrames.size());
 			
-			renderEntityHighlights(matrixStack, partialTicks, config,
+			renderEntityHighlights(PoseStack, partialTicks, config,
 				searchResultSigns, searchResultItemFrames, highlightedSigns,
 				highlightedItemFrames);
 		}
 	}
 	
 	private boolean hasAnyHighlights(List<SignBlockEntity> searchResultSigns,
-		List<ItemFrameEntity> searchResultItemFrames,
+		List<ItemFrame> searchResultItemFrames,
 		List<SignBlockEntity> highlightedSigns,
-		List<ItemFrameEntity> highlightedItemFrames)
+		List<ItemFrame> highlightedItemFrames)
 	{
 		return !searchResultSigns.isEmpty() || !highlightedSigns.isEmpty()
 			|| !searchResultItemFrames.isEmpty()
 			|| !highlightedItemFrames.isEmpty();
 	}
 	
-	private void renderEntityHighlights(MatrixStack matrixStack,
-		float partialTicks, SignFinderConfig config,
-		List<SignBlockEntity> searchResultSigns,
-		List<ItemFrameEntity> searchResultItemFrames,
-		List<SignBlockEntity> highlightedSigns,
-		List<ItemFrameEntity> highlightedItemFrames)
+	private void renderEntityHighlights(PoseStack PoseStack,
+                                        float partialTicks, SignFinderConfig config,
+                                        List<SignBlockEntity> searchResultSigns,
+                                        List<ItemFrame> searchResultItemFrames,
+                                        List<SignBlockEntity> highlightedSigns,
+                                        List<ItemFrame> highlightedItemFrames)
 	{
 		SignEspStyle style = config.highlight_style;
 		
 		// Render search results (supports custom colors)
-		renderSearchResults(matrixStack, partialTicks, style, searchResultSigns,
+		renderSearchResults(PoseStack, partialTicks, style, searchResultSigns,
 			searchResultItemFrames);
 		
 		// Render auto-detected results (uses default colors)
-		renderAutoDetectedEntities(matrixStack, partialTicks, config, style,
+		renderAutoDetectedEntities(PoseStack, partialTicks, config, style,
 			highlightedSigns, highlightedItemFrames);
 	}
 	
-	private void renderSearchResults(MatrixStack matrixStack,
+	private void renderSearchResults(PoseStack PoseStack,
 		float partialTicks, SignEspStyle style,
 		List<SignBlockEntity> searchResultSigns,
-		List<ItemFrameEntity> searchResultItemFrames)
+		List<ItemFrame> searchResultItemFrames)
 	{
 		// 分别渲染每个搜索结果告示牌，支持自定义颜色
 		for(SignBlockEntity sign : searchResultSigns)
 		{
-			Box signBox = new Box(sign.getPos());
-			int color = colorManager.getHighlightColor(sign.getPos());
-			renderSingleEntity(matrixStack, partialTicks, signBox, color,
+			AABB signAABB = new AABB(sign.getBlockPos());
+			int color = colorManager.getHighlightColor(sign.getBlockPos());
+			renderSingleEntity(PoseStack, partialTicks, signAABB, color,
 				style);
 		}
 		
 		// 分别渲染每个搜索结果物品展示框，支持自定义颜色
-		for(ItemFrameEntity itemFrame : searchResultItemFrames)
+		for(ItemFrame itemFrame : searchResultItemFrames)
 		{
-			Box itemFrameBox = new Box(itemFrame.getBlockPos());
-			int color = colorManager.getHighlightColor(itemFrame.getBlockPos());
-			renderSingleEntity(matrixStack, partialTicks, itemFrameBox, color,
+			AABB itemFrameAABB = new AABB(itemFrame.getPos());
+			int color = colorManager.getHighlightColor(itemFrame.getPos());
+			renderSingleEntity(PoseStack, partialTicks, itemFrameAABB, color,
 				style);
 		}
 	}
 	
-	private void renderAutoDetectedEntities(MatrixStack matrixStack,
+	private void renderAutoDetectedEntities(PoseStack PoseStack,
 		float partialTicks, SignFinderConfig config, SignEspStyle style,
 		List<SignBlockEntity> highlightedSigns,
-		List<ItemFrameEntity> highlightedItemFrames)
+		List<ItemFrame> highlightedItemFrames)
 	{
 		int defaultColor = config.sign_highlight_color;
 		
 		// 渲染自动检测的告示牌（使用默认颜色）
 		if(!highlightedSigns.isEmpty())
 		{
-			List<Box> autoDetectedBoxes = new ArrayList<>();
+			List<AABB> autoDetectedAABBes = new ArrayList<>();
 			for(SignBlockEntity sign : highlightedSigns)
 			{
-				autoDetectedBoxes.add(new Box(sign.getPos()));
+				autoDetectedAABBes.add(new AABB(sign.getBlockPos()));
 			}
-			renderEntityGroup(matrixStack, partialTicks, autoDetectedBoxes,
+			renderEntityGroup(PoseStack, partialTicks, autoDetectedAABBes,
 				defaultColor, style);
 		}
 		
 		// 渲染自动检测的物品展示框（使用默认颜色）
 		if(!highlightedItemFrames.isEmpty())
 		{
-			List<Box> autoDetectedItemFrameBoxes = new ArrayList<>();
-			for(ItemFrameEntity itemFrame : highlightedItemFrames)
+			List<AABB> autoDetectedItemFrameAABBes = new ArrayList<>();
+			for(ItemFrame itemFrame : highlightedItemFrames)
 			{
-				autoDetectedItemFrameBoxes
-					.add(new Box(itemFrame.getBlockPos()));
+				autoDetectedItemFrameAABBes
+					.add(new AABB(itemFrame.getPos()));
 			}
-			renderEntityGroup(matrixStack, partialTicks,
-				autoDetectedItemFrameBoxes, defaultColor, style);
+			renderEntityGroup(PoseStack, partialTicks,
+				autoDetectedItemFrameAABBes, defaultColor, style);
 		}
 	}
 	
-	private void renderSingleEntity(MatrixStack matrixStack, float partialTicks,
-		Box entityBox, int color, SignEspStyle style)
+	private void renderSingleEntity(PoseStack PoseStack, float partialTicks,
+		AABB entityAABB, int color, SignEspStyle style)
 	{
-		List<Box> singleBoxList = List.of(entityBox);
-		renderEntityGroup(matrixStack, partialTicks, singleBoxList, color,
+		List<AABB> singleAABBList = List.of(entityAABB);
+		renderEntityGroup(PoseStack, partialTicks, singleAABBList, color,
 			style);
 	}
 	
-	private void renderEntityGroup(MatrixStack matrixStack, float partialTicks,
-		List<Box> entityBoxes, int color, SignEspStyle style)
+	private void renderEntityGroup(PoseStack PoseStack, float partialTicks,
+		List<AABB> entityAABBes, int color, SignEspStyle style)
 	{
-		if(entityBoxes.isEmpty())
+		if(entityAABBes.isEmpty())
 			return;
 		
 		// 获取配置的透明度设置
@@ -161,20 +161,20 @@ public class HighlightRenderManager
 			int linesColor =
 				ColorUtils.combineRgbWithAlpha(color, outlineAlpha);
 			
-			RenderUtils.drawSolidBoxes(matrixStack, entityBoxes, quadsColor,
+			RenderUtils.drawSolidBoxes(PoseStack, entityAABBes, quadsColor,
 				false);
-			RenderUtils.drawOutlinedBoxes(matrixStack, entityBoxes, linesColor,
+			RenderUtils.drawSolidBoxes(PoseStack, entityAABBes, linesColor,
 				false);
 		}
 		
 		if(style.hasLines())
 		{
-			List<Vec3d> ends =
-				entityBoxes.stream().map(Box::getCenter).toList();
+			List<Vec3> ends =
+				entityAABBes.stream().map(AABB::getCenter).toList();
 			// 追踪线使用配置的透明度
 			int tracerColor =
 				ColorUtils.combineRgbWithAlpha(color, configuredAlpha);
-			RenderUtils.drawTracers(matrixStack, partialTicks, ends,
+			RenderUtils.drawTracers(PoseStack, partialTicks, ends,
 				tracerColor, false);
 		}
 	}

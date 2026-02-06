@@ -2,6 +2,9 @@ package net.signfinder;
 
 import java.util.List;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,15 +12,13 @@ import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigHolder;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.BlockPos;
+
 import net.signfinder.commands.core.CommandUtils;
 import net.signfinder.managers.AutoSaveManager;
 import net.signfinder.managers.ColorManager;
 import net.signfinder.managers.EntityDetectionManager;
 import net.signfinder.managers.HighlightRenderManager;
-import net.signfinder.managers.KeyBindingHandler;
+import net.signfinder.managers.KeyMappingHandler;
 import net.signfinder.managers.SearchResultManager;
 import net.signfinder.models.EntitySearchResult;
 import net.signfinder.services.SearchService;
@@ -31,7 +32,7 @@ import net.signfinder.search.SearchQueryProcessor;
 
 public final class SignFinderMod
 {
-	private static final MinecraftClient MC = MinecraftClient.getInstance();
+	private static final Minecraft MC = Minecraft.getInstance();
 	public static final String MOD_ID = "signfinder";
 	public static final Logger LOGGER =
 		LoggerFactory.getLogger(MOD_ID.toUpperCase());
@@ -69,7 +70,7 @@ public final class SignFinderMod
 		renderManager = new HighlightRenderManager(colorManager);
 		
 		// Initialize other components
-		new KeyBindingHandler(configHolder, detectionManager);
+		new KeyMappingHandler(configHolder, detectionManager);
 		
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher,
 			registryAccess) -> SignSearchCommand.register(dispatcher));
@@ -108,7 +109,7 @@ public final class SignFinderMod
 	
 	public void onUpdate()
 	{
-		if(!isEnabled() || MC.player == null || MC.world == null)
+		if(!isEnabled() || MC.player == null || MC.level == null)
 			return;
 		
 		SignFinderConfig config = configHolder.getConfig();
@@ -130,7 +131,7 @@ public final class SignFinderMod
 		searchService.performPeriodicCleanup();
 	}
 	
-	public void onRender(MatrixStack matrixStack, float partialTicks)
+	public void onRender(PoseStack matrixStack, float partialTicks)
 	{
 		if(!isEnabled())
 			return;

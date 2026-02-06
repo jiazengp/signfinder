@@ -3,9 +3,9 @@ package net.signfinder.commands.core;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import net.signfinder.models.EntitySearchResult;
 import net.signfinder.SignFinderConfig;
 import net.signfinder.SignFinderMod;
@@ -18,8 +18,8 @@ import java.util.List;
 public class SearchCommand extends BaseCommand
 {
 	public static int executeSearch(
-		CommandContext<FabricClientCommandSource> ctx, Integer radius,
-		String presetName, SearchType forceType)
+            CommandContext<FabricClientCommandSource> ctx, Integer radius,
+            String presetName, SearchType forceType)
 	{
 		if(!validatePlayerInWorld(ctx))
 			return 0;
@@ -41,9 +41,13 @@ public class SearchCommand extends BaseCommand
 				searchType = SearchType.PRESET;
 			}else
 			{
-				queryString = StringArgumentType.getString(ctx,
-					forceType == SearchType.REGEX ? "pattern"
-						: forceType == SearchType.ARRAY ? "keywords" : "query");
+                String argName =
+                        forceType == SearchType.REGEX
+                                ? "pattern"
+                                : (forceType == SearchType.ARRAY ? "keywords" : "query");
+
+                queryString = StringArgumentType.getString(ctx, argName);
+
 				searchType = forceType != null ? forceType : SearchType.TEXT;
 			}
 			
@@ -56,11 +60,11 @@ public class SearchCommand extends BaseCommand
 		{
 			// Send helpful error message about using quotes
 			ctx.getSource().sendFeedback(
-				Text.translatable("signfinder.error.invalid_query_format")
-					.formatted(Formatting.RED));
+				Component.translatable("signfinder.error.invalid_query_format")
+					.withStyle(ChatFormatting.RED));
 			ctx.getSource()
-				.sendFeedback(Text.translatable("signfinder.help.use_quotes")
-					.formatted(Formatting.YELLOW));
+				.sendFeedback(Component.translatable("signfinder.help.use_quotes")
+					.withStyle(ChatFormatting.YELLOW));
 			return 0;
 		}
 		
@@ -79,9 +83,9 @@ public class SearchCommand extends BaseCommand
 		{
 			savePreset(presetName, queryString, searchType, config);
 			ctx.getSource()
-				.sendFeedback(Text
+				.sendFeedback(Component
 					.translatable("signfinder.message.preset_saved", presetName)
-					.formatted(Formatting.GREEN));
+					.withStyle(ChatFormatting.GREEN));
 		}
 		
 		// 缓存结果
@@ -114,7 +118,7 @@ public class SearchCommand extends BaseCommand
 			return 0;
 		
 		SignFinderConfig config = signFinder.getConfigHolder().getConfig();
-		MinecraftClient mc = MinecraftClient.getInstance();
+		Minecraft mc = Minecraft.getInstance();
 		
 		if(mc.player == null)
 			return 0;
@@ -122,7 +126,7 @@ public class SearchCommand extends BaseCommand
 		int searchRadius = config.default_search_radius;
 		
 		ctx.getSource().sendFeedback(
-			Text.translatable("signfinder.search.all_signs", searchRadius));
+			Component.translatable("signfinder.search.all_signs", searchRadius));
 		
 		// Use empty query to match all entities (based on config)
 		SearchQuery query =
@@ -132,14 +136,14 @@ public class SearchCommand extends BaseCommand
 		
 		if(entityResults.isEmpty())
 		{
-			ctx.getSource().sendFeedback(Text.translatable(
+			ctx.getSource().sendFeedback(Component.translatable(
 				"signfinder.message.no_matching_signs", searchRadius));
 			return 0;
 		}
 		
 		String cacheKey = getPlayerCacheKey();
 		String queryString =
-			Text.translatable("signfinder.export.all_signs_title").getString();
+			Component.translatable("signfinder.export.all_signs_title").getString();
 		int currentPage = 1;
 		CommandUtils.cacheEntitySearchResults(cacheKey, entityResults,
 			currentPage, searchRadius);

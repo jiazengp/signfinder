@@ -2,11 +2,11 @@ package net.signfinder.cache;
 
 import java.util.List;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.signfinder.SignFinderConfig;
 import net.signfinder.models.EntitySearchResult;
 import net.signfinder.models.SignSearchResult;
@@ -41,7 +41,7 @@ public class LocalDataCacheManager
 	 * results.
 	 */
 	public List<EntitySearchResult> getMatchingLocalData(SearchQuery query,
-		SignFinderConfig config, Vec3d playerPos)
+		SignFinderConfig config, Vec3 playerPos)
 	{
 		List<SignSearchResult> localData = autoSaveManager.getLocalData();
 		
@@ -135,8 +135,8 @@ public class LocalDataCacheManager
 	 * position.
 	 * This is used for full range updates regardless of search criteria.
 	 */
-	public List<EntitySearchResult> getAllLocalDataInRange(Vec3d playerPos,
-		int radius)
+	public List<EntitySearchResult> getAllLocalDataInRange(Vec3 playerPos,
+                                                           int radius)
 	{
 		try
 		{
@@ -156,10 +156,10 @@ public class LocalDataCacheManager
 		}
 	}
 	
-	private boolean isWithinSearchRadius(BlockPos pos, Vec3d playerPos,
+	private boolean isWithinSearchRadius(BlockPos pos, Vec3 playerPos,
 		int radius)
 	{
-		double distance = Math.sqrt(pos.getSquaredDistance(playerPos));
+		double distance = Math.sqrt(pos.distToCenterSqr(playerPos));
 		return distance <= radius;
 	}
 	
@@ -171,7 +171,7 @@ public class LocalDataCacheManager
 	}
 	
 	private EntitySearchResult convertToEntityResult(SignSearchResult result,
-		Vec3d playerPos, SignFinderConfig config)
+		Vec3 playerPos, SignFinderConfig config)
 	{
 		return new EntitySearchResult(result.getPos(), playerPos,
 			result.getSignText(), result.getMatchedText(),

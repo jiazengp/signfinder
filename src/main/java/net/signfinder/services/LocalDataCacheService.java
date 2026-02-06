@@ -6,13 +6,14 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import net.signfinder.SignFinderConfig;
 import net.signfinder.SignFinderMod;
 import net.signfinder.models.SignSearchResult;
@@ -88,8 +89,8 @@ public class LocalDataCacheService
 	 */
 	public void checkAndSave()
 	{
-		MinecraftClient client = MinecraftClient.getInstance();
-		if(client.world == null || client.player == null)
+		Minecraft client = Minecraft.getInstance();
+		if(client.level == null || client.player == null)
 			return;
 		
 		SignFinderConfig config = SignFinderMod.getInstance().getConfig();
@@ -145,8 +146,8 @@ public class LocalDataCacheService
 	 */
 	public void cleanupCachedLocalData()
 	{
-		MinecraftClient client = MinecraftClient.getInstance();
-		if(client.world == null || client.player == null)
+		Minecraft client = Minecraft.getInstance();
+		if(client.level== null || client.player == null)
 			return;
 		
 		SignFinderConfig config = SignFinderMod.getInstance().getConfig();
@@ -168,7 +169,7 @@ public class LocalDataCacheService
 		for(SignSearchResult localResult : localData)
 		{
 			ValidationResult validation =
-				validationService.validateSignAtPosition(client.world,
+				validationService.validateSignAtPosition(client.level,
 					localResult.getPos(), localResult);
 			
 			LOGGER.debug("Position {} validation status: {}",
@@ -214,8 +215,8 @@ public class LocalDataCacheService
 	 */
 	public void validateCachedMemoryData()
 	{
-		MinecraftClient client = MinecraftClient.getInstance();
-		if(client.world == null || client.player == null)
+		Minecraft client = Minecraft.getInstance();
+		if(client.level== null || client.player == null)
 			return;
 		
 		String worldKey = getCurrentWorldKey();
@@ -232,7 +233,7 @@ public class LocalDataCacheService
 			SignSearchResult cachedResult = entry.getValue();
 			
 			ValidationResult validation = validationService
-				.validateSignAtPosition(client.world, pos, cachedResult);
+				.validateSignAtPosition(client.level, pos, cachedResult);
 			
 			switch(validation.status())
 			{
@@ -264,19 +265,19 @@ public class LocalDataCacheService
 			toRemove.size(), toUpdate.size());
 	}
 	
-	private void updateSignData(BlockPos pos, MinecraftClient client)
+	private void updateSignData(BlockPos pos, Minecraft client)
 	{
 		try
 		{
-			if(client.world == null)
+			if(client.level== null)
 				return;
 			String[] currentText = net.signfinder.util.SignTextUtils
-				.getSignText(client.world, pos);
+				.getSignText(client.level, pos);
 			if(currentText == null)
 				return;
 			
 			SignSearchResult updatedResult = new SignSearchResult(pos,
-				client.player.getEntityPos(), currentText,
+				client.player.position(), currentText,
 				String.join(" ", currentText),
 				SignFinderMod.getInstance().getConfig().text_preview_length);
 			
@@ -307,11 +308,11 @@ public class LocalDataCacheService
 	private SignSearchResult convertFromSavedData(SavedSignData data)
 	{
 		BlockPos pos = new BlockPos(data.x, data.y, data.z);
-		MinecraftClient client = MinecraftClient.getInstance();
+		Minecraft client = Minecraft.getInstance();
 		
 		return new SignSearchResult(pos,
-			client.player != null ? client.player.getEntityPos()
-				: pos.toCenterPos(),
+			client.player != null ? client.player.position()
+				: pos.getCenter(),
 			data.signText, data.matchedText,
 			SignFinderMod.getInstance().getConfig().text_preview_length);
 	}
@@ -320,42 +321,35 @@ public class LocalDataCacheService
 	 * Gets the current world dimension key for data grouping.
 	 * Automatically handles any dimension including custom modded dimensions.
 	 */
-	private String getCurrentWorldKey()
-	{
-		MinecraftClient client = MinecraftClient.getInstance();
-		if(client.world == null)
-			return "unknown";
-		
-		RegistryKey<World> worldKey = client.world.getRegistryKey();
-		return getDimensionKey(worldKey);
-	}
-	
+
+    private static String getCurrentWorldKey()
+    {
+        Minecraft client = Minecraft.getInstance();
+        if (client.level == null)
+            return "unknown";
+
+        return client.level.dimension().toString(); // minecraft:overworld
+    }
 	/**
 	 * Converts a world registry key to a safe string identifier.
 	 * Handles vanilla dimensions with friendly names and custom dimensions with
 	 * full identifiers.
 	 */
-	private String getDimensionKey(RegistryKey<World> worldKey)
-	{
-		if(worldKey == null)
-			return "unknown";
-		
-		// Handle common vanilla dimensions with friendly names
-		if(worldKey == World.OVERWORLD)
-			return "overworld";
-		else if(worldKey == World.NETHER)
-			return "nether";
-		else if(worldKey == World.END)
-			return "end";
-		else
-		{
-			// For modded/custom dimensions, use the full identifier
-			String dimensionId = worldKey.getValue().toString();
-			
-			// Sanitize the dimension ID for safe file system usage
-			return sanitizeDimensionKey(dimensionId);
-		}
-	}
+    private static String getDimensionKey(ResourceKey<@NotNull Level> dimensionKey)
+    {
+        if (dimensionKey == null)
+            return "unknown";
+
+        // Vanilla dimensions (Mojmap)
+        if (dimensionKey == Level.OVERWORLD)
+            return "overworld";
+        else if (dimensionKey == Level.NETHER)
+            return "nether";
+        else if (dimensionKey == Level.END)
+            return "end";
+
+        return dimensionKey.toString();
+    }
 	
 	/**
 	 * Sanitizes dimension keys to be safe for use in file operations and data

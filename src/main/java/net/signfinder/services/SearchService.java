@@ -1,7 +1,7 @@
 package net.signfinder.services;
 
 import java.util.List;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec3;
 import net.signfinder.SignFinderConfig;
 import net.signfinder.models.EntitySearchResult;
 import net.signfinder.models.SignSearchResult;
@@ -34,7 +34,7 @@ public interface SearchService
 	 *            Search radius in blocks
 	 * @return List of all signs found within radius
 	 */
-	List<SignSearchResult> findAllSigns(Vec3d playerPos, int radius);
+	List<SignSearchResult> findAllSigns(Vec3 playerPos, int radius);
 	
 	/**
 	 * Clear all cached data to free memory.

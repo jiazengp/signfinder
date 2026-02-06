@@ -5,11 +5,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import net.minecraft.block.entity.SignBlockEntity;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.signfinder.services.CacheService;
+import net.signfinder.util.SignTextUtils;
 
 /**
  * Thread-safe cache for sign data with automatic expiration and validation.
@@ -24,7 +25,7 @@ public class SignDataCache
 	
 	private final Map<BlockPos, WeakReference<SignData>> cache =
 		new ConcurrentHashMap<>();
-	private final MinecraftClient mc = MinecraftClient.getInstance();
+	private final Minecraft mc = Minecraft.getInstance();
 	
 	@Override
 	public Optional<SignDataCache.SignData> get(BlockPos pos)
@@ -114,12 +115,7 @@ public class SignDataCache
 	 */
 	public SignData createSignData(SignBlockEntity sign)
 	{
-		String[] lines = new String[4];
-		for(int i = 0; i < 4; i++)
-		{
-			Text text = sign.getFrontText().getMessage(i, false);
-			lines[i] = text.getString();
-		}
+        String[] lines = SignTextUtils.getSignTextArray(sign);
 		
 		String combinedText = String.join(" ", lines);
 		return new SignData(lines, combinedText, System.currentTimeMillis());
@@ -127,12 +123,12 @@ public class SignDataCache
 	
 	private boolean isSignStillValid(BlockPos pos)
 	{
-		if(mc.world == null)
+		if(mc.level == null)
 			return false;
 		
 		try
 		{
-			return mc.world.getBlockEntity(pos) instanceof SignBlockEntity;
+			return mc.level.getBlockEntity(pos) instanceof SignBlockEntity;
 		}catch(Exception e)
 		{
 			return false;

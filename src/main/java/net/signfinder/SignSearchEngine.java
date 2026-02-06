@@ -2,7 +2,7 @@ package net.signfinder;
 
 import java.util.List;
 
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec3;
 import net.signfinder.cache.PatternCache;
 import net.signfinder.cache.SignDataCache;
 import net.signfinder.cache.LocalDataCacheManager;
@@ -36,7 +36,7 @@ public class SignSearchEngine
 			localDataManager);
 	}
 	
-	public List<SignSearchResult> findAllSigns(Vec3d playerPos, int radius)
+	public List<SignSearchResult> findAllSigns(Vec3 playerPos, int radius)
 	{
 		return searchService.findAllSigns(playerPos, radius);
 	}

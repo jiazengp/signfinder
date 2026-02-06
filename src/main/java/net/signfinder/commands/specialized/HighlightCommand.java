@@ -3,10 +3,9 @@ package net.signfinder.commands.specialized;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.signfinder.SignFinderMod;
 import net.signfinder.commands.core.BaseCommand;
 import net.signfinder.commands.core.CommandUtils;
@@ -14,7 +13,7 @@ import net.signfinder.commands.core.CommandUtils;
 public class HighlightCommand extends BaseCommand
 {
 	public static int removeHighlight(
-		CommandContext<FabricClientCommandSource> ctx)
+            CommandContext<FabricClientCommandSource> ctx)
 	{
 		if(!validatePlayerInWorld(ctx))
 			return 0;
@@ -27,16 +26,18 @@ public class HighlightCommand extends BaseCommand
 		if(signFinder != null)
 		{
 			boolean removed = signFinder.removeSearchResultByPos(x, y, z);
-			if(removed)
+			if (removed)
 			{
 				ctx.getSource().sendFeedback(
-					Text.translatable("signfinder.message.highlight_removed", x,
-						y, z).formatted(Formatting.GREEN));
-			}else
+					Component.translatable("signfinder.message.highlight_removed", x,
+						y, z).withStyle(ChatFormatting.GREEN)
+                );
+			} else
 			{
 				ctx.getSource().sendFeedback(
-					Text.translatable("signfinder.message.highlight_not_found",
-						x, y, z).formatted(Formatting.YELLOW));
+					Component.translatable("signfinder.message.highlight_not_found",
+						x, y, z).withStyle(ChatFormatting.YELLOW)
+                );
 			}
 		}
 		
@@ -62,25 +63,21 @@ public class HighlightCommand extends BaseCommand
 				// 获取颜色对应的 Minecraft 格式化颜色
 				int color =
 					signFinder.getSignHighlightColor(new BlockPos(x, y, z));
-				Formatting mcColor = getMinecraftColor(color);
+				ChatFormatting mcColor = getMinecraftColor(color);
 				
-				MutableText colorText =
-					Text.translatable("signfinder.color." + colorName);
-				if(mcColor != null)
-				{
-					colorText = colorText.formatted(mcColor);
-				}
+				Component colorComponent =
+					Component.translatable("signfinder.color." + colorName).withStyle(mcColor);
 				
-				MutableText message =
-					Text.translatable("signfinder.message.color_changed_to", x,
-						y, z).append(" ").append(colorText);
+				Component message =
+					Component.translatable("signfinder.message.color_changed_to", x,
+						y, z).append(" ").append(colorComponent);
 				ctx.getSource()
-					.sendFeedback(message.formatted(Formatting.GREEN));
+					.sendFeedback(message.copy().withStyle(ChatFormatting.GREEN));
 			}else
 			{
 				ctx.getSource().sendFeedback(
-					Text.translatable("signfinder.message.highlight_not_found",
-						x, y, z).formatted(Formatting.YELLOW));
+					Component.translatable("signfinder.message.highlight_not_found",
+						x, y, z).withStyle(ChatFormatting.YELLOW));
 			}
 		}
 		
@@ -104,24 +101,24 @@ public class HighlightCommand extends BaseCommand
 		}
 		
 		ctx.getSource().sendFeedback(
-			Text.translatable("signfinder.message.results_cleared")
-				.formatted(Formatting.GREEN));
+			Component.translatable("signfinder.message.results_cleared")
+				.withStyle(ChatFormatting.GREEN));
 		return 1;
 	}
 	
-	private static Formatting getMinecraftColor(int color)
+	private static ChatFormatting getMinecraftColor(int color)
 	{
 		return switch(color)
 		{
-			case 0x00FF00 -> Formatting.GREEN; // 绿色
-			case 0xFF0000 -> Formatting.RED; // 红色
-			case 0x0000FF -> Formatting.BLUE; // 蓝色
-			case 0xFFFF00 -> Formatting.YELLOW; // 黄色
-			case 0xFF00FF -> Formatting.LIGHT_PURPLE; // 紫色
-			case 0x00FFFF -> Formatting.AQUA; // 青色
-			case 0xFF8000 -> Formatting.GOLD; // 橙色
-			case 0xFFFFFF -> Formatting.WHITE; // 白色
-			default -> Formatting.GREEN;
+			case 0x00FF00 -> ChatFormatting.GREEN; // 绿色
+			case 0xFF0000 -> ChatFormatting.RED; // 红色
+			case 0x0000FF -> ChatFormatting.BLUE; // 蓝色
+			case 0xFFFF00 -> ChatFormatting.YELLOW; // 黄色
+			case 0xFF00FF -> ChatFormatting.LIGHT_PURPLE; // 紫色
+			case 0x00FFFF -> ChatFormatting.AQUA; // 青色
+			case 0xFF8000 -> ChatFormatting.GOLD; // 橙色
+			case 0xFFFFFF -> ChatFormatting.WHITE; // 白色
+			default -> ChatFormatting.GREEN;
 		};
 	}
 }

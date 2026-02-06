@@ -3,11 +3,11 @@ package net.signfinder.services;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.minecraft.world.entity.decoration.ItemFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.minecraft.block.entity.SignBlockEntity;
-import net.minecraft.entity.decoration.ItemFrameEntity;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.signfinder.SignFinderConfig;
 import net.signfinder.util.ChunkUtils;
 import net.signfinder.util.ItemFrameUtils;
@@ -56,24 +56,24 @@ public class EntityDetectionService
 	 *            Configuration containing detection keywords and settings
 	 * @return List of detected item frame entities
 	 */
-	public List<ItemFrameEntity> detectMatchingItemFrames(
+	public List<ItemFrame> detectMatchingItemFrames(
 		SignFinderConfig config)
 	{
-		List<ItemFrameEntity> detectedFrames = new ArrayList<>();
-		
-		ChunkUtils.getLoadedEntities().forEach(entity -> {
-			if(entity instanceof ItemFrameEntity itemFrame
-				&& ItemFrameUtils.hasItem(itemFrame))
-			{
-				if(containsContainerReferenceItemFrame(itemFrame, config)
-					&& !containsIgnoreWordsItemFrame(itemFrame, config))
-				{
-					detectedFrames.add(itemFrame);
-				}
-			}
-		});
-		
-		LOGGER.debug("Detected {} matching item frames", detectedFrames.size());
+		List<ItemFrame> detectedFrames = new ArrayList<>();
+
+        ChunkUtils.getLoadedEntities().forEach(entity -> {
+            if (entity instanceof ItemFrame itemFrame
+                    && ItemFrameUtils.hasItem(itemFrame)) {
+
+                if (containsContainerReferenceItemFrame(itemFrame, config)
+                        && !containsIgnoreWordsItemFrame(itemFrame, config)) {
+                    detectedFrames.add(itemFrame);
+                }
+            }
+        });
+
+
+        LOGGER.debug("Detected {} matching item frames", detectedFrames.size());
 		return detectedFrames;
 	}
 	
@@ -100,7 +100,7 @@ public class EntityDetectionService
 			
 			if(matches)
 			{
-				LOGGER.debug("Sign at {} matches keyword '{}'", sign.getPos(),
+				LOGGER.debug("Sign at {} matches keyword '{}'", sign.getBlockPos(),
 					keyword);
 				return true;
 			}
@@ -133,7 +133,7 @@ public class EntityDetectionService
 			if(matches)
 			{
 				LOGGER.debug("Sign at {} ignored due to word '{}'",
-					sign.getPos(), ignoreWord);
+					sign.getBlockPos(), ignoreWord);
 				return true;
 			}
 		}
@@ -142,7 +142,7 @@ public class EntityDetectionService
 	}
 	
 	private boolean containsContainerReferenceItemFrame(
-		ItemFrameEntity itemFrame, SignFinderConfig config)
+		ItemFrame itemFrame, SignFinderConfig config)
 	{
 		if(config.container_keywords == null
 			|| config.container_keywords.length == 0)
@@ -163,7 +163,7 @@ public class EntityDetectionService
 			if(matches)
 			{
 				LOGGER.debug("Item frame at {} matches keyword '{}'",
-					itemFrame.getBlockPos(), keyword);
+					itemFrame.getPos(), keyword);
 				return true;
 			}
 		}
@@ -171,7 +171,7 @@ public class EntityDetectionService
 		return false;
 	}
 	
-	private boolean containsIgnoreWordsItemFrame(ItemFrameEntity itemFrame,
+	private boolean containsIgnoreWordsItemFrame(ItemFrame itemFrame,
 		SignFinderConfig config)
 	{
 		if(config.ignore_words == null || config.ignore_words.length == 0)
@@ -193,7 +193,7 @@ public class EntityDetectionService
 			if(matches)
 			{
 				LOGGER.debug("Item frame at {} ignored due to word '{}'",
-					itemFrame.getBlockPos(), ignoreWord);
+					itemFrame.getPos(), ignoreWord);
 				return true;
 			}
 		}

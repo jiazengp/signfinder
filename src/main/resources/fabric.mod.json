@@ -17,8 +17,7 @@
   "environment": "client",
   "entrypoints": {
     "main": [
-      "net.signfinder.SignFinderModInitializer",
-      "net.signfinder.test.SignFinderTestClient"
+      "net.signfinder.SignFinderModInitializer"
     ],
     "modmenu": [
       "net.signfinder.SignFinderModMenuApi"
@@ -29,11 +28,11 @@
   ],
   "accessWidener": "signfinder.accesswidener",
   "depends": {
-    "fabricloader": ">=0.17.2",
-    "fabric-api": ">=0.133.7",
-    "modmenu": "^16.0.0-rc.1",
-    "cloth-config": "^20.0.148",
-    "minecraft": "~1.21.9-beta.2",
+    "fabricloader": ">=0.18.3",
+    "fabric-api": ">=0.140.2",
+    "modmenu": "^17.0.0-beta.1",
+    "cloth-config": "^21.11.153",
+    "minecraft": "~1.21.11",
     "java": ">=21"
   },
   "breaks": {
