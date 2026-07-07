@@ -33,7 +33,7 @@ public abstract class WorldRendererMixin
 		PoseStack matrixStack = new PoseStack();
 		matrixStack.mulPose(positionMatrix);
 		float tickProgress = tickCounter.getGameTimeDeltaPartialTick(false);
-
+		
 		SignFinderMod signFinder = SignFinderMod.getInstance();
 		if(signFinder != null && signFinder.isEnabled())
 			signFinder.onRender(matrixStack, tickProgress);
