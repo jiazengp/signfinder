@@ -3,7 +3,7 @@ package net.signfinder.managers;
 import com.mojang.blaze3d.platform.InputConstants;
 import me.shedaniel.autoconfig.ConfigHolder;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -28,11 +28,11 @@ public class KeyMappingHandler
 		this.configHolder = configHolder;
 		this.detectionManager = detectionManager;
 		
-		toggleAutoDetectionKey = KeyBindingHelper.registerKeyBinding(
+		toggleAutoDetectionKey = KeyMappingHelper.registerKeyMapping(
 			new KeyMapping("key.signfinder.toggle_auto_detection",
 				InputConstants.UNKNOWN.getValue(), CATEGORY));
 		
-		toggleHighlightingKey = KeyBindingHelper.registerKeyBinding(
+		toggleHighlightingKey = KeyMappingHelper.registerKeyMapping(
 			new KeyMapping("key.signfinder.toggle_highlighting",
 				InputConstants.UNKNOWN.getValue(), CATEGORY));
 		
@@ -62,11 +62,10 @@ public class KeyMappingHandler
 		if(!config.enable_auto_detection)
 			detectionManager.clearHighlighted();
 		
-		MC.player.displayClientMessage(
+		MC.player.sendSystemMessage(
 			Component.translatable(config.enable_auto_detection
 				? "signfinder.message.auto_detection_enabled"
-				: "signfinder.message.auto_detection_disabled"),
-			false);
+				: "signfinder.message.auto_detection_disabled"));
 	}
 	
 	private void toggleHighlighting()
@@ -78,10 +77,9 @@ public class KeyMappingHandler
 		config.enable_sign_highlighting = !config.enable_sign_highlighting;
 		configHolder.save();
 		
-		MC.player.displayClientMessage(
+		MC.player.sendSystemMessage(
 			Component.translatable(config.enable_sign_highlighting
 				? "signfinder.message.highlighting_enabled"
-				: "signfinder.message.highlighting_disabled"),
-			false);
+				: "signfinder.message.highlighting_disabled"));
 	}
 }

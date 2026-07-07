@@ -96,8 +96,8 @@ public enum ExportUtils
 		
 		if(results.isEmpty())
 		{
-			mc.player.displayClientMessage(
-				Component.translatable("signfinder.export.no_results"), false);
+			mc.player.sendSystemMessage(
+				Component.translatable("signfinder.export.no_results"));
 			return false;
 		}
 		
@@ -120,8 +120,8 @@ public enum ExportUtils
 			return true;
 		}catch(Exception e)
 		{
-			mc.player.displayClientMessage(Component.translatable(
-				"signfinder.export.error", e.getMessage()), false);
+			mc.player.sendSystemMessage(Component
+				.translatable("signfinder.export.error", e.getMessage()));
 			return false;
 		}
 	}
@@ -261,15 +261,14 @@ public enum ExportUtils
 		String fileName, Path filePath)
 	{
 		// Success message with count and filename
-		Objects.requireNonNull(mc.player).displayClientMessage(Component
-			.translatable("signfinder.export.success", resultCount, fileName),
-			false);
+		Objects.requireNonNull(mc.player).sendSystemMessage(Component
+			.translatable("signfinder.export.success", resultCount, fileName));
 		
 		// Clickable file path message
 		MutableComponent fileLocationMessage =
 			Component.translatable("signfinder.export.file_location_prefix")
 				.append(createClickableFilePath(filePath));
-		mc.player.displayClientMessage(fileLocationMessage, false);
+		mc.player.sendSystemMessage(fileLocationMessage);
 	}
 	
 	private static MutableComponent createClickableFilePath(Path filePath)
