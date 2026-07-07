@@ -19,9 +19,7 @@ SignFinder is a Minecraft Fabric mod that intelligently finds and highlights sig
 - `./gradlew spotlessApply` - Apply code formatting fixes
 
 ### Testing
-- `./gradlew runEndToEndTest` - Run automated end-to-end tests that launch Minecraft and test mod functionality
 - `./gradlew runClient` - Launch Minecraft client with the mod for manual testing
-- Test suites available: `HighlightTestSuite`, `SearchTestSuite` with `TestEnvironmentBuilder`
 
 ### Publishing (Maintainer Only)
 - `./gradlew publishMods` - Publish to CurseForge (requires API key)
