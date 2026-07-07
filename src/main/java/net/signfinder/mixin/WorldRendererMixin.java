@@ -23,29 +23,12 @@ public abstract class WorldRendererMixin
 	// 26.1: renderLevel with ChunkSectionsToRender parameter
 	@Inject(at = @At("RETURN"),
 		method = "renderLevel(Lcom/mojang/blaze3d/resource/GraphicsResourceAllocator;Lnet/minecraft/client/DeltaTracker;ZLnet/minecraft/client/renderer/state/level/CameraRenderState;Lorg/joml/Matrix4fc;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;Lorg/joml/Vector4f;ZLnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;)V")
-	private void onRenderLevel(GraphicsResourceAllocator allocator,
+	private void onRender(GraphicsResourceAllocator allocator,
 		DeltaTracker tickCounter, boolean renderBlockOutline,
 		CameraRenderState cameraState, Matrix4fc positionMatrix,
 		GpuBufferSlice gpuBufferSlice, Vector4f vector4f,
 		boolean shouldRenderSky, ChunkSectionsToRender chunkSectionsToRender,
 		CallbackInfo ci)
-	{
-		doRender(tickCounter, positionMatrix);
-	}
-
-	// 26.2+: renamed to render, ChunkSectionsToRender parameter removed
-	@Inject(at = @At("RETURN"),
-		method = "render(Lcom/mojang/blaze3d/resource/GraphicsResourceAllocator;Lnet/minecraft/client/DeltaTracker;ZLnet/minecraft/client/renderer/state/level/CameraRenderState;Lorg/joml/Matrix4fc;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;Lorg/joml/Vector4f;Z)V")
-	private void onRender(GraphicsResourceAllocator allocator,
-		DeltaTracker tickCounter, boolean renderBlockOutline,
-		CameraRenderState cameraState, Matrix4fc positionMatrix,
-		GpuBufferSlice gpuBufferSlice, Vector4f vector4f,
-		boolean shouldRenderSky, CallbackInfo ci)
-	{
-		doRender(tickCounter, positionMatrix);
-	}
-
-	private void doRender(DeltaTracker tickCounter, Matrix4fc positionMatrix)
 	{
 		PoseStack matrixStack = new PoseStack();
 		matrixStack.mulPose(positionMatrix);
