@@ -36,6 +36,8 @@ public class LocalDataCacheService
 	
 	private boolean hasNewData = false;
 	
+	private Map<String, List<SavedSignData>> cachedLoadedData = null;
+	
 	public LocalDataCacheService(DataValidationService validationService,
 		DataPersistenceService persistenceService)
 	{
@@ -111,13 +113,14 @@ public class LocalDataCacheService
 		
 		// Combine with existing data from other worlds
 		Map<String, List<SavedSignData>> allData =
-			new ConcurrentHashMap<>(persistenceService.loadDetectionData());
+			new ConcurrentHashMap<>(getOrLoadWorldData());
 		allData.put(worldKey, dataToSave);
 		
 		// Save to file
 		if(persistenceService.saveDetectionData(allData))
 		{
 			hasNewData = false;
+			cachedLoadedData = null; // force reload on next read
 			LOGGER.debug("Auto-saved {} detected signs for world: {}",
 				dataToSave.size(), worldKey);
 		}else
@@ -131,8 +134,7 @@ public class LocalDataCacheService
 	 */
 	public List<SignSearchResult> getLocalData()
 	{
-		Map<String, List<SavedSignData>> savedData =
-			persistenceService.loadDetectionData();
+		Map<String, List<SavedSignData>> savedData = getOrLoadWorldData();
 		String currentWorldKey = getCurrentWorldKey();
 		List<SavedSignData> worldData =
 			savedData.getOrDefault(currentWorldKey, List.of());
@@ -202,6 +204,7 @@ public class LocalDataCacheService
 		{
 			updatedData = Map.of(currentWorldKey, worldData);
 			persistenceService.saveDetectionData(updatedData);
+			cachedLoadedData = null; // force reload on next read
 			LOGGER.debug("Saved updated local data with {} entries",
 				worldData.size());
 		}else
@@ -291,6 +294,20 @@ public class LocalDataCacheService
 			LOGGER.warn("Failed to update sign data at {}: {}", pos,
 				e.getMessage());
 		}
+	}
+	
+	/**
+	 * Loads detection data from disk, caching it in memory to avoid repeated
+	 * file I/O on every search. The cache is invalidated when new data is
+	 * saved.
+	 */
+	private Map<String, List<SavedSignData>> getOrLoadWorldData()
+	{
+		if(cachedLoadedData == null)
+		{
+			cachedLoadedData = persistenceService.loadDetectionData();
+		}
+		return cachedLoadedData;
 	}
 	
 	private SavedSignData convertToSavedData(SignSearchResult result)
