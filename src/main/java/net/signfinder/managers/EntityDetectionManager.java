@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.signfinder.SignFinderConfig;
+import net.signfinder.cache.PatternCache;
 import net.signfinder.services.EntityDetectionService;
 import net.signfinder.services.EntityValidationService;
 import net.signfinder.models.SignSearchResult;
@@ -35,9 +36,9 @@ public class EntityDetectionManager
 	private final EntityDetectionService detectionService;
 	private final EntityValidationService validationService;
 	
-	public EntityDetectionManager()
+	public EntityDetectionManager(PatternCache patternCache)
 	{
-		detectionService = new EntityDetectionService();
+		detectionService = new EntityDetectionService(patternCache);
 		validationService = new EntityValidationService();
 		
 		LOGGER.info(

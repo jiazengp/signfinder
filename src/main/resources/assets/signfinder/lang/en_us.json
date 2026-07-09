@@ -41,6 +41,8 @@
   "text.autoconfig.signfinder.option.ignore_words.@Tooltip": "List of words to ignore during auto detection. Signs and item frames containing these words will not be highlighted automatically.",
   "text.autoconfig.signfinder.option.container_keywords": "Auto Detection Keywords",
   "text.autoconfig.signfinder.option.container_keywords.@Tooltip": "Keywords for auto detecting and highlighting signs and item frames containing specific content. Leave empty to disable auto detection.",
+  "text.autoconfig.signfinder.option.auto_detection_use_regex": "Use Regex for Auto-Detection",
+  "text.autoconfig.signfinder.option.auto_detection_use_regex.@Tooltip": "Treat container keywords as regex patterns instead of plain text",
   "text.autoconfig.signfinder.option.auto_highlight_detected": "Auto Highlight Detected",
   "text.autoconfig.signfinder.option.auto_highlight_detected.@Tooltip": "Automatically highlight signs and item frames when they match auto detection keywords.",
   "text.autoconfig.signfinder.option.auto_save_detection_data": "Auto Save Detection Data",

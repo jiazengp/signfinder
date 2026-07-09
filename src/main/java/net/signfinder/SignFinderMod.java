@@ -64,7 +64,8 @@ public final class SignFinderMod
 		initializeServices();
 		
 		// Initialize managers using dependency injection
-		detectionManager = new EntityDetectionManager();
+		detectionManager = new EntityDetectionManager(
+			ServiceRegistry.getService(PatternCache.class));
 		searchResultManager = new SearchResultManager(detectionManager);
 		colorManager = new ColorManager(searchResultManager);
 		renderManager = new HighlightRenderManager(colorManager);

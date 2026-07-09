@@ -41,6 +41,8 @@
   "text.autoconfig.signfinder.option.ignore_words.@Tooltip": "Список слов для игнорирования во время автообнаружения. Таблички и рамки с предметами, содержащие эти слова, не будут автоматически подсвечиваться.",
   "text.autoconfig.signfinder.option.container_keywords": "Ключевые слова автообнаружения",
   "text.autoconfig.signfinder.option.container_keywords.@Tooltip": "Ключевые слова для автоматического обнаружения и подсветки табличек и рамок с предметами, содержащих определенный контент. Оставьте пустым для отключения автообнаружения.",
+  "text.autoconfig.signfinder.option.auto_detection_use_regex": "Use Regex for Auto-Detection",
+  "text.autoconfig.signfinder.option.auto_detection_use_regex.@Tooltip": "Treat container keywords as regex patterns instead of plain text",
   "text.autoconfig.signfinder.option.auto_highlight_detected": "Автоматически подсвечивать обнаруженное",
   "text.autoconfig.signfinder.option.auto_highlight_detected.@Tooltip": "Автоматически подсвечивать таблички и рамки с предметами, когда они соответствуют ключевым словам автообнаружения.",
   "text.autoconfig.signfinder.option.auto_save_detection_data": "Автоматически сохранять данные обнаружения",

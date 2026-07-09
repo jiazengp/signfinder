@@ -2,6 +2,8 @@ package net.signfinder.services;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 import net.minecraft.world.entity.decoration.ItemFrame;
 import org.slf4j.Logger;
@@ -9,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.signfinder.SignFinderConfig;
+import net.signfinder.cache.PatternCache;
 import net.signfinder.util.ChunkUtils;
 import net.signfinder.util.ItemFrameUtils;
 import net.signfinder.util.SignTextUtils;
@@ -21,6 +24,13 @@ public class EntityDetectionService
 {
 	private static final Logger LOGGER =
 		LoggerFactory.getLogger(EntityDetectionService.class);
+	
+	private final PatternCache patternCache;
+	
+	public EntityDetectionService(PatternCache patternCache)
+	{
+		this.patternCache = patternCache;
+	}
 	
 	/**
 	 * Detect signs that contain container references based on configuration.
@@ -95,8 +105,16 @@ public class EntityDetectionService
 			if(keyword.trim().isEmpty())
 				continue;
 			
-			boolean matches = config.case_sensitive ? fullText.contains(keyword)
-				: fullText.toLowerCase().contains(keyword.toLowerCase());
+			boolean matches;
+			if(config.auto_detection_use_regex)
+			{
+				matches =
+					matchesRegex(fullText, keyword, config.case_sensitive);
+			}else
+			{
+				matches = config.case_sensitive ? fullText.contains(keyword)
+					: fullText.toLowerCase().contains(keyword.toLowerCase());
+			}
 			
 			if(matches)
 			{
@@ -157,8 +175,16 @@ public class EntityDetectionService
 			if(keyword.trim().isEmpty())
 				continue;
 			
-			boolean matches = config.case_sensitive ? itemName.contains(keyword)
-				: itemName.toLowerCase().contains(keyword.toLowerCase());
+			boolean matches;
+			if(config.auto_detection_use_regex)
+			{
+				matches =
+					matchesRegex(itemName, keyword, config.case_sensitive);
+			}else
+			{
+				matches = config.case_sensitive ? itemName.contains(keyword)
+					: itemName.toLowerCase().contains(keyword.toLowerCase());
+			}
 			
 			if(matches)
 			{
@@ -198,6 +224,21 @@ public class EntityDetectionService
 			}
 		}
 		
+		return false;
+	}
+	
+	private boolean matchesRegex(String text, String pattern,
+		boolean caseSensitive)
+	{
+		Optional<Pattern> compiledPattern =
+			patternCache.getOrCompile(pattern, caseSensitive);
+		if(compiledPattern.isPresent())
+		{
+			return compiledPattern.get().matcher(text).find();
+		}
+		LOGGER.warn(
+			"Invalid regex pattern '{}' in auto-detection keywords, skipping",
+			pattern);
 		return false;
 	}
 }

@@ -94,6 +94,9 @@ public class SignFinderConfig implements ConfigData
 	@ConfigEntry.Gui.Tooltip
 	public String[] container_keywords = {};
 	
+	@ConfigEntry.Gui.Tooltip
+	public boolean auto_detection_use_regex = false;
+	
 	@ConfigEntry.Gui.CollapsibleObject
 	@ConfigEntry.Gui.Excluded
 	public SearchPresets search_presets = new SearchPresets();

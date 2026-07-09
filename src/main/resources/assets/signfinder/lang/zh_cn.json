@@ -41,6 +41,8 @@
   "text.autoconfig.signfinder.option.ignore_words.@Tooltip": "在自动检测时忽略的词语列表。包含这些词语的告示牌和物品展示框不会被自动高亮。",
   "text.autoconfig.signfinder.option.container_keywords": "自动检测关键词",
   "text.autoconfig.signfinder.option.container_keywords.@Tooltip": "用于自动检测和高亮包含关键词内容的告示牌和物品展示框。留空则禁用自动检测。",
+  "text.autoconfig.signfinder.option.auto_detection_use_regex": "使用正则表达式自动检测",
+  "text.autoconfig.signfinder.option.auto_detection_use_regex.@Tooltip": "将关键词视为正则表达式而非纯文本匹配",
   "text.autoconfig.signfinder.option.auto_highlight_detected": "自动高亮检测目标",
   "text.autoconfig.signfinder.option.auto_highlight_detected.@Tooltip": "当告示牌和物品展示框匹配自动检测关键词时自动高亮显示。",
   "text.autoconfig.signfinder.option.auto_save_detection_data": "自动保存检测数据",
