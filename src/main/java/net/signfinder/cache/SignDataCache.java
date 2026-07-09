@@ -1,11 +1,9 @@
 package net.signfinder.cache;
 
-import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.signfinder.services.CacheService;
@@ -13,7 +11,7 @@ import net.signfinder.util.SignTextUtils;
 
 /**
  * Thread-safe cache for sign data with automatic expiration and validation.
- * Uses weak references to prevent memory leaks.
+ * Uses time-based expiry to prevent memory leaks.
  */
 public class SignDataCache
 	implements CacheService<BlockPos, SignDataCache.SignData>
@@ -22,34 +20,18 @@ public class SignDataCache
 	private static final long CACHE_VALIDITY_MS = 5000;
 	private static final long CACHE_EXPIRY_MS = 10000;
 	
-	private final Map<BlockPos, WeakReference<SignData>> cache =
-		new ConcurrentHashMap<>();
-	private final Minecraft mc = Minecraft.getInstance();
+	private final Map<BlockPos, SignData> cache = new ConcurrentHashMap<>();
 	
 	@Override
 	public Optional<SignDataCache.SignData> get(BlockPos pos)
 	{
-		WeakReference<SignData> ref = cache.get(pos);
-		if(ref == null)
-		{
-			return Optional.empty();
-		}
-		
-		SignData data = ref.get();
+		SignData data = cache.get(pos);
 		if(data == null)
 		{
-			cache.remove(pos);
 			return Optional.empty();
 		}
 		
 		if(!data.isValid())
-		{
-			cache.remove(pos);
-			return Optional.empty();
-		}
-		
-		// Validate sign still exists at position
-		if(!isSignStillValid(pos))
 		{
 			cache.remove(pos);
 			return Optional.empty();
@@ -61,7 +43,7 @@ public class SignDataCache
 	@Override
 	public void put(BlockPos pos, SignDataCache.SignData data)
 	{
-		cache.put(pos, new WeakReference<>(data));
+		cache.put(pos, data);
 		
 		// Cleanup if cache gets too large
 		if(cache.size() > MAX_CACHE_SIZE)
@@ -91,7 +73,7 @@ public class SignDataCache
 		while(iterator.hasNext())
 		{
 			var entry = iterator.next();
-			SignData data = entry.getValue().get();
+			SignData data = entry.getValue();
 			
 			if(data == null || data.isExpired())
 			{
@@ -118,20 +100,6 @@ public class SignDataCache
 		
 		String combinedText = String.join(" ", lines);
 		return new SignData(lines, combinedText, System.currentTimeMillis());
-	}
-	
-	private boolean isSignStillValid(BlockPos pos)
-	{
-		if(mc.level == null)
-			return false;
-		
-		try
-		{
-			return mc.level.getBlockEntity(pos) instanceof SignBlockEntity;
-		}catch(Exception e)
-		{
-			return false;
-		}
 	}
 	
 	/**
