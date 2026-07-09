@@ -17,7 +17,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
-import net.fabricmc.loader.api.FabricLoader;
 import net.signfinder.SignFinderConfig;
 import net.signfinder.SignFinderMod;
 import net.signfinder.core.AutoSaveMode;
@@ -48,25 +47,28 @@ public class FileOperationService implements DataPersistenceService
 	private Path getAutoSaveDir()
 	{
 		Minecraft client = Minecraft.getInstance();
-		Path gameDir = FabricLoader.getInstance().getGameDir();
+		Path gameDir = client.gameDirectory.toPath();
 		
-		// Try to get current world name
-		String worldName = client.name();
-		
-		// Use world-specific directory: saves/[world_name]/signfinder/autosave/
-		Path autoSaveDir = gameDir.resolve("saves").resolve(worldName)
-			.resolve("signfinder").resolve("autosave");
-		
-		try
+		String worldName;
+		if(client.hasSingleplayerServer()
+			&& client.getSingleplayerServer() != null)
 		{
-			Files.createDirectories(autoSaveDir);
-		}catch(IOException e)
+			// Single-player: use the save directory name
+			worldName =
+				client.getSingleplayerServer().getWorldData().getLevelName();
+		}else if(client.getCurrentServer() != null)
 		{
-			LOGGER.error("Failed to create autosave directory {}: {}",
-				autoSaveDir, e.getMessage());
+			// Multiplayer: use server IP (sanitize for filesystem)
+			worldName =
+				client.getCurrentServer().ip.replaceAll("[^a-zA-Z0-9._-]", "_");
+		}else
+		{
+			// Fallback (should rarely happen)
+			worldName = "unknown";
 		}
 		
-		return autoSaveDir;
+		return gameDir.resolve("saves").resolve(worldName).resolve("signfinder")
+			.resolve("autosave");
 	}
 	
 	/**
