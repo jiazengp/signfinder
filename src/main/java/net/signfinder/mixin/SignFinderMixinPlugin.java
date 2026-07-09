@@ -41,7 +41,9 @@ public class SignFinderMixinPlugin implements IMixinConfigPlugin
 				return !is26_2orLater; // WorldRendererMixin only on 26.1.x
 		}catch(VersionParsingException e)
 		{
-			return true; // fallback: apply all
+			// If we can't determine the version, don't apply either
+			// version-specific mixin — applying both would crash.
+			return false;
 		}
 	}
 	
