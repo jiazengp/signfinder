@@ -4,10 +4,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.item.ItemStack;
 
-import static com.mojang.text2speech.Narrator.LOGGER;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ItemFrameUtils
 {
+	private static final Logger LOGGER =
+		LoggerFactory.getLogger(ItemFrameUtils.class);
+	
 	public static String getItemFrameItemName(ItemFrame itemFrame,
 		boolean caseSensitive)
 	{
@@ -19,7 +23,7 @@ public class ItemFrameUtils
 			Component itemName = itemFrame.getItem().getDisplayName();
 			;
 			String name = itemName.getString();
-			LOGGER.info(name);
+			LOGGER.debug("Item frame name: {}", name);
 			return caseSensitive ? name : name.toLowerCase();
 		}catch(Exception e)
 		{
