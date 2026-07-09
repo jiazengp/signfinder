@@ -12,7 +12,14 @@ This mod is designed to help players locate signs or item frames containing spec
 - Pagination and distance-based sorting
 - Auto-removal when approaching signs
 - Automatic local saving of search results
-- Multilingual support: Chinese and English
+- Multilingual support: Chinese, English, and Russian
+
+## Requirements
+
+- Minecraft >=26.1.0 <26.3.0
+- Fabric Loader >=0.19.0
+- Fabric API >=0.152.0+26.1
+- Java >=25
 
 ## Usage
 
@@ -20,18 +27,26 @@ This mod is designed to help players locate signs or item frames containing spec
 
 ```
 /findsign <query>                        # Text search
-/findsign "中文搜索需要括起来"            # Enclose non-ASCII characters or text with spaces/special symbols in quotes "
 /findsign regex <pattern>                # Regex search  
 /findsign array word1,word2              # Multi-word search (comma-separated)
 /findsign preset <preset name>           # Use preset
+/findsign preset <preset name> <radius>  # Use preset with radius
 /findsign presets                        # List saved presets
+/findsign page <number>                  # Go to page
+/findsign current                        # Refresh current page
 /findsign clear                          # Clear results
-/findsign export <format (TXT/JSON)>     # Export last search result to file 
+/findsign remove <x> <y> <z>            # Remove highlight at position
+/findsign color <x> <y> <z>             # Cycle highlight color
+/findsign export <TXT/JSON>              # Export last search results
 ```
 
 ### Configuration
 
-Access via ModMenu → SignFinder → Config
+Access via ModMenu → SignFinder → Config, or edit `config/signfinder.json`:
+- Auto-detection keywords and ignore words
+- Search radius and page size
+- Highlight colors and ESP styles
+- Auto-save mode and export format
 
 ## Development
 
