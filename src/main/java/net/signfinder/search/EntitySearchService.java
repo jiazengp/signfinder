@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
@@ -34,6 +37,9 @@ public class EntitySearchService implements SearchService
 	private final SignDataCache signCache;
 	private final SearchQueryProcessor queryProcessor;
 	private final LocalDataCacheManager localDataManager;
+	
+	private static final Logger LOGGER =
+		LoggerFactory.getLogger(EntitySearchService.class);
 	
 	public EntitySearchService(SignDataCache signCache,
 		SearchQueryProcessor queryProcessor,
@@ -241,16 +247,14 @@ public class EntitySearchService implements SearchService
 					if(shouldRemoveFromCache(pos, localResult, config))
 					{
 						localDataManager.removeFromLocalCache(pos);
-						System.out
-							.println("Removed obsolete cached data at " + pos);
+						LOGGER.debug("Removed obsolete cached data at {}", pos);
 					}
 				}
 			}
 		}catch(Exception e)
 		{
 			// Log error but don't interrupt search
-			System.err
-				.println("Error during full range update: " + e.getMessage());
+			LOGGER.warn("Error during full range update: {}", e.getMessage());
 		}
 	}
 	
