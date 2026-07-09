@@ -6,6 +6,9 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.signfinder.services.CacheService;
 
 /**
@@ -14,7 +17,10 @@ import net.signfinder.services.CacheService;
  */
 public class PatternCache implements CacheService<String, Pattern>
 {
+	private static final Logger LOGGER =
+		LoggerFactory.getLogger(PatternCache.class);
 	private static final int MAX_CACHE_SIZE = 100;
+	private static final int MAX_PATTERN_LENGTH = 200;
 	
 	private final Map<String, Pattern> cache =
 		new LinkedHashMap<>(MAX_CACHE_SIZE + 1, 0.75f, true)
@@ -76,6 +82,14 @@ public class PatternCache implements CacheService<String, Pattern>
 	 */
 	public Optional<Pattern> getOrCompile(String regex, boolean caseSensitive)
 	{
+		// Reject overly long patterns to prevent ReDoS
+		if(regex.length() > MAX_PATTERN_LENGTH)
+		{
+			LOGGER.warn("Rejected regex pattern exceeding {} characters",
+				MAX_PATTERN_LENGTH);
+			return Optional.empty();
+		}
+		
 		String cacheKey = (caseSensitive ? "cs:" : "ci:") + regex;
 		
 		Optional<Pattern> cached = get(cacheKey);
