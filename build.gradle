@@ -19,7 +19,7 @@ repositories {
 	mavenCentral()
 
 	maven {url = "https://maven.shedaniel.me/"}
-	maven {url = "https://maven.terraformersmc.com/releases/"}
+	maven {url = "https://api.modrinth.com/maven"}
 }
 
 // Override vulnerable dependencies until Minecraft updates to newer versions
@@ -45,8 +45,8 @@ dependencies {
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
 	// Mod Menu
-	implementation "com.terraformersmc:modmenu:${project.modmenu_version}"
-	include "com.terraformersmc:modmenu:${project.modmenu_version}"
+	implementation "maven.modrinth:modmenu:${project.modmenu_version}"
+	include "maven.modrinth:modmenu:${project.modmenu_version}"
 
 	// Cloth Config
 	implementation("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
