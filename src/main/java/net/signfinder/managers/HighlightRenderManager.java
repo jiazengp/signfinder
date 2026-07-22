@@ -153,13 +153,13 @@ public class HighlightRenderManager
 			int quadsColor = ColorUtils.combineRgbWithAlpha(color, fillAlpha);
 			
 			// 轮廓线使用更高的不透明度以确保可见性
-			int outlineAlpha = Math.max(128, configuredAlpha); // 至少50%不透明度
+			int outlineAlpha = Math.max(30, configuredAlpha);
 			int linesColor =
 				ColorUtils.combineRgbWithAlpha(color, outlineAlpha);
 			
 			RenderUtils.drawSolidBoxes(PoseStack, entityAABBes, quadsColor,
 				false);
-			RenderUtils.drawSolidBoxes(PoseStack, entityAABBes, linesColor,
+			RenderUtils.drawOutlinedBoxes(PoseStack, entityAABBes, linesColor,
 				false);
 		}
 		

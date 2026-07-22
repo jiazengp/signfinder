@@ -44,7 +44,7 @@ public enum SignFinderPipelines
 	public static final RenderPipeline ESP_LINES =
 		RenderPipelines.register(RenderPipeline.builder(FOGLESS_LINES_SNIPPET)
 			.withLocation(Identifier.parse("signfinder:pipeline/esp_lines"))
-			.build());
+			.withDepthStencilState(Optional.empty()).build());
 	
 	/**
 	 * Similar to the DEBUG_QUADS ShaderPipeline, but with culling enabled.
