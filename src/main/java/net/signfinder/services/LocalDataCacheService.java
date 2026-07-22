@@ -10,6 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -328,7 +329,8 @@ public class LocalDataCacheService
 		Minecraft client = Minecraft.getInstance();
 		
 		return new SignSearchResult(pos,
-			client.player != null ? client.player.position() : pos.getCenter(),
+			client.player != null ? client.player.position()
+				: Vec3.atCenterOf(pos),
 			data.signText, data.matchedText,
 			SignFinderMod.getInstance().getConfig().text_preview_length);
 	}

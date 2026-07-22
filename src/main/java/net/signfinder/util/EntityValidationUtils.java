@@ -135,7 +135,7 @@ public enum EntityValidationUtils
 	public static boolean isWithinRadius(BlockPos pos, Vec3 center,
 		double radius)
 	{
-		Vec3 posVec = pos.getCenter();
+		Vec3 posVec = Vec3.atCenterOf(pos);
 		return posVec.distanceTo(center) <= radius;
 	}
 	

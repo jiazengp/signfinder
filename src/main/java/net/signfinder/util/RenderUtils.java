@@ -1,19 +1,19 @@
 package net.signfinder.util;
 
+import java.util.List;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.PoseStack.Pose;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import java.util.List;
-
-import net.signfinder.rendering.SignFinderRenderLayers;
 import org.joml.Vector3f;
+
 import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.signfinder.rendering.SignFinderRenderLayers;
 
 public enum RenderUtils
 {
@@ -23,16 +23,11 @@ public enum RenderUtils
 	
 	public static Vec3 getCameraPos()
 	{
-		Camera camera = MC.gameRenderer.getMainCamera();
+		Camera camera = MC.gameRenderer.mainCamera();
 		if(camera == null)
 			return Vec3.ZERO;
 		
 		return camera.position();
-	}
-	
-	public static MultiBufferSource.BufferSource getVCP()
-	{
-		return MC.renderBuffers().bufferSource();
 	}
 	
 	private static Vec3 getTracerOrigin(float partialTicks)
@@ -47,22 +42,27 @@ public enum RenderUtils
 	public static void drawTracers(PoseStack matrices, float partialTicks,
 		List<Vec3> ends, int color, boolean depthTest)
 	{
-		MultiBufferSource.BufferSource vcp = getVCP();
 		RenderType layer = SignFinderRenderLayers.getLines(depthTest);
-		VertexConsumer buffer = vcp.getBuffer(layer);
+		SignFinderBufferSource bs = new SignFinderBufferSource();
+		VertexConsumer buffer = bs.getBuffer(layer);
 		
 		Vec3 start = getTracerOrigin(partialTicks);
 		Vec3 offset = getCameraPos().reverse();
 		for(Vec3 end : ends)
-			drawLine(matrices, buffer, start, end.add(offset), color);
+			drawLine(matrices.last(), buffer, start, end.add(offset), color);
 		
-		vcp.endBatch(layer);
+		bs.uploadAndDraw();
 	}
 	
 	public static void drawLine(PoseStack matrices, VertexConsumer buffer,
 		Vec3 start, Vec3 end, int color)
 	{
-		Pose entry = matrices.last();
+		drawLine(matrices.last(), buffer, start, end, color);
+	}
+	
+	private static void drawLine(Pose entry, VertexConsumer buffer, Vec3 start,
+		Vec3 end, int color)
+	{
 		float x1 = (float)start.x;
 		float y1 = (float)start.y;
 		float z1 = (float)start.z;
@@ -99,21 +99,26 @@ public enum RenderUtils
 	public static void drawSolidBoxes(PoseStack matrices, List<AABB> boxes,
 		int color, boolean depthTest)
 	{
-		MultiBufferSource.BufferSource vcp = getVCP();
 		RenderType layer = SignFinderRenderLayers.getQuads(depthTest);
-		VertexConsumer buffer = vcp.getBuffer(layer);
+		SignFinderBufferSource bs = new SignFinderBufferSource();
+		VertexConsumer buffer = bs.getBuffer(layer);
 		
 		Vec3 camOffset = getCameraPos().reverse();
 		for(AABB box : boxes)
-			drawSolidBox(matrices, buffer, box.move(camOffset), color);
+			drawSolidBox(matrices.last(), buffer, box.move(camOffset), color);
 		
-		vcp.endBatch(layer);
+		bs.uploadAndDraw();
 	}
 	
 	public static void drawSolidBox(PoseStack matrices, VertexConsumer buffer,
 		AABB box, int color)
 	{
-		PoseStack.Pose entry = matrices.last();
+		drawSolidBox(matrices.last(), buffer, box, color);
+	}
+	
+	private static void drawSolidBox(PoseStack.Pose entry,
+		VertexConsumer buffer, AABB box, int color)
+	{
 		float x1 = (float)box.minX;
 		float y1 = (float)box.minY;
 		float z1 = (float)box.minZ;
@@ -155,21 +160,27 @@ public enum RenderUtils
 	public static void drawOutlinedBoxes(PoseStack matrices, List<AABB> boxes,
 		int color, boolean depthTest)
 	{
-		MultiBufferSource.BufferSource vcp = getVCP();
 		RenderType layer = SignFinderRenderLayers.getLines(depthTest);
-		VertexConsumer buffer = vcp.getBuffer(layer);
+		SignFinderBufferSource bs = new SignFinderBufferSource();
+		VertexConsumer buffer = bs.getBuffer(layer);
 		
 		Vec3 camOffset = getCameraPos().reverse();
 		for(AABB box : boxes)
-			drawOutlinedBox(matrices, buffer, box.move(camOffset), color);
+			drawOutlinedBox(matrices.last(), buffer, box.move(camOffset),
+				color);
 		
-		vcp.endBatch(layer);
+		bs.uploadAndDraw();
 	}
 	
 	public static void drawOutlinedBox(PoseStack matrices,
 		VertexConsumer buffer, AABB box, int color)
 	{
-		PoseStack.Pose entry = matrices.last();
+		drawOutlinedBox(matrices.last(), buffer, box, color);
+	}
+	
+	private static void drawOutlinedBox(PoseStack.Pose entry,
+		VertexConsumer buffer, AABB box, int color)
+	{
 		float x1 = (float)box.minX;
 		float y1 = (float)box.minY;
 		float z1 = (float)box.minZ;

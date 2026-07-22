@@ -148,18 +148,18 @@ public class HighlightRenderManager
 		
 		if(style.hasBoxes())
 		{
-			// 使用配置的透明度为填充颜色，但稍微降低一些以避免过于突出
-			int fillAlpha = Math.max(10, configuredAlpha * 60 / 255); // 保持相对透明
+			// 填充颜色：使用配置的透明度，保持相对透明
+			int fillAlpha = Math.max(10, configuredAlpha * 60 / 255);
 			int quadsColor = ColorUtils.combineRgbWithAlpha(color, fillAlpha);
 			
 			// 轮廓线使用更高的不透明度以确保可见性
-			int outlineAlpha = Math.max(128, configuredAlpha); // 至少50%不透明度
+			int outlineAlpha = Math.max(30, configuredAlpha);
 			int linesColor =
 				ColorUtils.combineRgbWithAlpha(color, outlineAlpha);
 			
 			RenderUtils.drawSolidBoxes(PoseStack, entityAABBes, quadsColor,
 				false);
-			RenderUtils.drawSolidBoxes(PoseStack, entityAABBes, linesColor,
+			RenderUtils.drawOutlinedBoxes(PoseStack, entityAABBes, linesColor,
 				false);
 		}
 		
