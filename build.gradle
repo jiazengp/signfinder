@@ -57,7 +57,7 @@ dependencies {
 	}
 
 	constraints {
-		implementation("org.yaml:snakeyaml:2.5") {
+		implementation("org.yaml:snakeyaml:2.6") {
 			because "version 1.27 pulled from cloth-config has security vulnerabilities"
 		}
 		implementation("com.google.code.gson:gson:2.13.2") {
